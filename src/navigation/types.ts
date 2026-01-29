@@ -5,15 +5,25 @@ import { Service } from '../types';
 export type RootStackParamList = {
   Auth: undefined;
   Main: NavigatorScreenParams<MainTabParamList>;
+  BarberMain: NavigatorScreenParams<BarberTabParamList>; // 新增
   BookingFlow: NavigatorScreenParams<BookingStackParamList>;
 };
 
-// 主要 Tab 導航參數
+// 顧客 Tab 導航參數
 export type MainTabParamList = {
   Home: undefined;
   Booking: undefined;
   MyBookings: undefined;
   Profile: undefined;
+};
+
+// 理髮師 Tab 導航參數 (新增)
+export type BarberTabParamList = {
+  BarberHome: undefined;
+  BookingCalendar: undefined;
+  Availability: undefined;
+  Stats: undefined;
+  BarberProfile: undefined;
 };
 
 // 預約流程導航參數
@@ -37,12 +47,11 @@ export type BookingStackParamList = {
   BookingSuccess: { bookingId: string };
 };
 
-// 管理端導航參數
+// 管理端導航參數（保留給未來店主使用）
 export type ManageStackParamList = {
   Dashboard: undefined;
   MySchedule: undefined;
   Availability: undefined;
-  // 店長專用
   StaffManagement: undefined;
   ServiceManagement: undefined;
   Reports: undefined;
