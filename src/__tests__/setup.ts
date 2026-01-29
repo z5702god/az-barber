@@ -8,10 +8,15 @@ jest.mock('../services/supabase', () => ({
       eq: jest.fn().mockReturnThis(),
       gte: jest.fn().mockReturnThis(),
       lte: jest.fn().mockReturnThis(),
+      in: jest.fn().mockReturnThis(),
+      not: jest.fn().mockReturnThis(),
+      is: jest.fn().mockReturnThis(),
       order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
       single: jest.fn(),
       insert: jest.fn().mockReturnThis(),
       update: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
     })),
     auth: {
       getSession: jest.fn(),
@@ -19,6 +24,3 @@ jest.mock('../services/supabase', () => ({
     },
   },
 }));
-
-// Mock react-native-vector-icons
-jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => 'Icon');
