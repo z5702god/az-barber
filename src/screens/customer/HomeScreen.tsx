@@ -113,20 +113,6 @@ export const HomeScreen: React.FC = () => {
         ))
       )}
 
-      {/* 快速預約按鈕 */}
-      <Button
-        mode="contained"
-        onPress={() => {
-          // @ts-ignore - navigating to parent stack
-          navigation.getParent()?.navigate('BookingFlow', {
-            screen: 'SelectServices'
-          });
-        }}
-        style={styles.quickBookButton}
-        contentStyle={styles.quickBookButtonContent}
-      >
-        立即預約
-      </Button>
     </ScrollView>
   );
 };
@@ -179,12 +165,5 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     color: '#666',
-  },
-  quickBookButton: {
-    margin: 16,
-    marginTop: 24,
-  },
-  quickBookButtonContent: {
-    paddingVertical: 8,
   },
 });

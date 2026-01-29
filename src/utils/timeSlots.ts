@@ -65,23 +65,43 @@ export const isSlotAvailable = (
 };
 
 /**
+ * Check if a time slot is in the past (for today's date)
+ */
+export const isSlotInPast = (slotTime: string, selectedDate: string): boolean => {
+  const today = formatDate(new Date());
+  if (selectedDate !== today) {
+    return false;
+  }
+
+  const now = new Date();
+  const [slotHour, slotMin] = slotTime.split(':').map(Number);
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const slotMinutes = slotHour * 60 + slotMin;
+
+  return slotMinutes <= currentMinutes;
+};
+
+/**
  * Get available time slots for a specific date
  */
 export const getAvailableSlots = (
   availability: Availability | null,
   existingBookings: Booking[],
-  requiredDuration: number
+  requiredDuration: number,
+  selectedDate?: string
 ): TimeSlot[] => {
   if (!availability) {
     return [];
   }
 
   const allSlots = generateTimeSlots(availability.start_time, availability.end_time);
+  const dateToCheck = selectedDate || formatDate(new Date());
 
   return allSlots.map(slot => ({
     start_time: slot,
     end_time: addMinutesToTime(slot, requiredDuration),
-    available: isSlotAvailable(slot, requiredDuration, availability.end_time, existingBookings),
+    available: !isSlotInPast(slot, dateToCheck) &&
+               isSlotAvailable(slot, requiredDuration, availability.end_time, existingBookings),
   }));
 };
 

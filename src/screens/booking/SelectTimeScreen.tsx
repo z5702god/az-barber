@@ -72,8 +72,8 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const timeSlots = useMemo(() => {
-    return getAvailableSlots(availability, existingBookings, totalDuration);
-  }, [availability, existingBookings, totalDuration]);
+    return getAvailableSlots(availability, existingBookings, totalDuration, selectedDate);
+  }, [availability, existingBookings, totalDuration, selectedDate]);
 
   const handleDateSelect = (day: DateData) => {
     if (day.dateString >= today) {
@@ -235,8 +235,8 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   slotSelected: {
-    backgroundColor: '#6200ee',
-    borderColor: '#6200ee',
+    backgroundColor: '#6750A4',
+    borderColor: '#6750A4',
   },
   slotText: {
     fontSize: 14,
