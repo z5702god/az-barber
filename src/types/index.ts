@@ -1,6 +1,15 @@
 // 使用者角色
 export type UserRole = 'customer' | 'barber' | 'owner';
 
+// 性別選項
+export type Gender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
+
+// 使用者偏好設定
+export interface UserPreferences {
+  booking_reminder: boolean;
+  promo_notifications: boolean;
+}
+
 // 使用者
 export interface User {
   id: string;
@@ -9,6 +18,9 @@ export interface User {
   email?: string;
   role: UserRole;
   avatar_url?: string;
+  birthday?: string;
+  gender?: Gender;
+  preferences?: UserPreferences;
   created_at: string;
 }
 
