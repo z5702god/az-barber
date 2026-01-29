@@ -10,6 +10,7 @@ import { RootStackParamList, MainTabParamList } from './types';
 
 // Navigators
 import { BookingNavigator } from './BookingNavigator';
+import { BarberTabNavigator } from './BarberTabNavigator';
 
 // Screens
 import { LoginScreen } from '../screens/auth/LoginScreen';
@@ -20,7 +21,7 @@ import { ProfileScreen } from '../screens/customer/ProfileScreen';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const MainTabNavigator: React.FC = () => {
+const CustomerTabNavigator: React.FC = () => {
   const theme = useTheme();
 
   return (
@@ -78,18 +79,24 @@ const MainTabNavigator: React.FC = () => {
 };
 
 export const AppNavigator: React.FC = () => {
-  const { session, loading } = useAuth();
+  const { session, user, loading } = useAuth();
 
   if (loading) {
     return null; // 或顯示 loading 畫面
   }
+
+  // 根據角色選擇導航器
+  const isBarber = user?.role === 'barber' || user?.role === 'owner';
 
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {session ? (
           <>
-            <Stack.Screen name="Main" component={MainTabNavigator} />
+            <Stack.Screen
+              name="Main"
+              component={isBarber ? BarberTabNavigator : CustomerTabNavigator}
+            />
             <Stack.Screen
               name="BookingFlow"
               component={BookingNavigator}
