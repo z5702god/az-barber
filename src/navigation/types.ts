@@ -47,6 +47,12 @@ export type BookingStackParamList = {
   BookingSuccess: { bookingId: string };
 };
 
+// 個人資料 Stack 導航參數
+export type ProfileStackParamList = {
+  ProfileMain: undefined;
+  EditProfile: undefined;
+};
+
 // 管理端導航參數（保留給未來店主使用）
 export type ManageStackParamList = {
   Dashboard: undefined;
