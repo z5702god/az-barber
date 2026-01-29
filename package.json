@@ -4,9 +4,11 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -33,8 +35,14 @@
     "react-native-vector-icons": "^10.3.0"
   },
   "devDependencies": {
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
     "@types/react-native-vector-icons": "^6.4.18",
+    "jest": "^30.2.0",
+    "jest-expo": "^54.0.16",
+    "ts-jest": "^29.4.6",
     "typescript": "~5.9.2"
   },
   "private": true
