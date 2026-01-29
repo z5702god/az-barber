@@ -5,7 +5,7 @@ import { Service } from '../types';
 export type RootStackParamList = {
   Auth: undefined;
   Main: NavigatorScreenParams<MainTabParamList>;
-  BookingFlow: { barberId: string };
+  BookingFlow: NavigatorScreenParams<BookingStackParamList>;
 };
 
 // 主要 Tab 導航參數
