@@ -11,12 +11,12 @@ import { RootStackParamList, MainTabParamList } from './types';
 // Navigators
 import { BookingNavigator } from './BookingNavigator';
 import { BarberTabNavigator } from './BarberTabNavigator';
+import { ProfileStackNavigator } from './ProfileStackNavigator';
 
 // Screens
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { HomeScreen } from '../screens/customer/HomeScreen';
 import { MyBookingsScreen } from '../screens/customer/MyBookingsScreen';
-import { ProfileScreen } from '../screens/customer/ProfileScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -71,8 +71,8 @@ const CustomerTabNavigator: React.FC = () => {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
-        options={{ title: '個人', headerTitle: '個人資料' }}
+        component={ProfileStackNavigator}
+        options={{ title: '個人', headerShown: false }}
       />
     </Tab.Navigator>
   );

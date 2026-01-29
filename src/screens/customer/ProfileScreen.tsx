@@ -1,10 +1,16 @@
 import React from 'react';
 import { StyleSheet, ScrollView, Alert } from 'react-native';
 import { Card, Text, Button, Avatar, List, Divider } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../hooks/useAuth';
+import { ProfileStackParamList } from '../../navigation/types';
+
+type ProfileScreenNavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'ProfileMain'>;
 
 export const ProfileScreen: React.FC = () => {
   const { user, signOut } = useAuth();
+  const navigation = useNavigation<ProfileScreenNavigationProp>();
 
   const handleSignOut = () => {
     Alert.alert(
@@ -70,7 +76,7 @@ export const ProfileScreen: React.FC = () => {
           title="編輯個人資料"
           left={(props) => <List.Icon {...props} icon="account-edit" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
-          onPress={() => console.log('Edit profile')}
+          onPress={() => navigation.navigate('EditProfile')}
         />
         <Divider />
         <List.Item
