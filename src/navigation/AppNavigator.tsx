@@ -1,12 +1,12 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { useAuth } from '../hooks/useAuth';
 import { RootStackParamList, MainTabParamList } from './types';
+import { colors, typography } from '../theme';
 
 // Navigators
 import { BookingNavigator } from './BookingNavigator';
@@ -17,13 +17,16 @@ import { ProfileStackNavigator } from './ProfileStackNavigator';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { HomeScreen } from '../screens/customer/HomeScreen';
 import { MyBookingsScreen } from '../screens/customer/MyBookingsScreen';
+import { BookingDetailScreen } from '../screens/customer/BookingDetailScreen';
+import { AIChatScreen } from '../screens/customer/AIChatScreen';
+import { NotificationsScreen } from '../screens/customer/NotificationsScreen';
+import { PrivacyPolicyScreen } from '../screens/shared/PrivacyPolicyScreen';
+import { TermsScreen } from '../screens/shared/TermsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 const CustomerTabNavigator: React.FC = () => {
-  const theme = useTheme();
-
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -34,8 +37,8 @@ const CustomerTabNavigator: React.FC = () => {
             case 'Home':
               iconName = focused ? 'home' : 'home-outline';
               break;
-            case 'Booking':
-              iconName = focused ? 'calendar-plus' : 'calendar-plus';
+            case 'AIChat':
+              iconName = focused ? 'chat' : 'chat-outline';
               break;
             case 'MyBookings':
               iconName = focused ? 'calendar-check' : 'calendar-check-outline';
@@ -49,25 +52,47 @@ const CustomerTabNavigator: React.FC = () => {
 
           return <Icon name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: 'gray',
+        // Dark theme tab bar styling
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.mutedForeground,
+        tabBarStyle: {
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+        },
+        tabBarLabelStyle: {
+          fontFamily: typography.fontFamily.secondary,
+          fontSize: 12,
+        },
+        // Dark theme header styling
+        headerStyle: {
+          backgroundColor: colors.background,
+        },
+        headerTintColor: colors.foreground,
+        headerTitleStyle: {
+          fontFamily: typography.fontFamily.primarySemiBold,
+          color: colors.foreground,
+        },
         headerShown: true,
       })}
     >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
-        options={{ title: '首頁', headerTitle: 'AZ Barber' }}
+        options={{
+          title: '首頁',
+          headerShown: false,
+        }}
       />
       <Tab.Screen
-        name="Booking"
-        component={HomeScreen}
-        options={{ title: '預約', headerTitle: '預約服務' }}
+        name="AIChat"
+        component={AIChatScreen}
+        options={{ title: '小安', headerShown: false }}
       />
       <Tab.Screen
         name="MyBookings"
         component={MyBookingsScreen}
-        options={{ title: '我的預約', headerTitle: '我的預約' }}
+        options={{ title: '預約', headerTitle: '我的預約' }}
       />
       <Tab.Screen
         name="Profile"
@@ -82,16 +107,34 @@ export const AppNavigator: React.FC = () => {
   const { session, user, loading } = useAuth();
 
   if (loading) {
-    return null; // 或顯示 loading 畫面
+    return null;
   }
 
-  // 根據角色選擇導航器
+  // Select navigator based on role
   const isBarber = user?.role === 'barber' || user?.role === 'owner';
 
+  // Authenticated: has a valid session
+  const isAuthenticated = !!session;
+
+  // Dark navigation theme
+  const navigationTheme = {
+    ...DefaultTheme,
+    dark: true,
+    colors: {
+      ...DefaultTheme.colors,
+      primary: colors.primary,
+      background: colors.background,
+      card: colors.card,
+      text: colors.foreground,
+      border: colors.border,
+      notification: colors.primary,
+    },
+  };
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navigationTheme}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {session ? (
+        {isAuthenticated ? (
           <>
             <Stack.Screen
               name="Main"
@@ -100,12 +143,35 @@ export const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="BookingFlow"
               component={BookingNavigator}
+              options={{
+                headerShown: false,
+                presentation: 'modal',
+              }}
+            />
+            <Stack.Screen
+              name="BookingDetail"
+              component={BookingDetailScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Notifications"
+              component={NotificationsScreen}
               options={{ headerShown: false }}
             />
           </>
         ) : (
           <Stack.Screen name="Auth" component={LoginScreen} />
         )}
+        <Stack.Screen
+          name="PrivacyPolicy"
+          component={PrivacyPolicyScreen}
+          options={{ headerShown: false, presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="Terms"
+          component={TermsScreen}
+          options={{ headerShown: false, presentation: 'modal' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

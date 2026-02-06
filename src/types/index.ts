@@ -1,16 +1,16 @@
-// 使用者角色
+// User role
 export type UserRole = 'customer' | 'barber' | 'owner';
 
-// 性別選項
+// Gender options
 export type Gender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
 
-// 使用者偏好設定
+// User preferences
 export interface UserPreferences {
   booking_reminder: boolean;
   promo_notifications: boolean;
 }
 
-// 使用者
+// User
 export interface User {
   id: string;
   name: string;
@@ -22,9 +22,11 @@ export interface User {
   gender?: Gender;
   preferences?: UserPreferences;
   created_at: string;
+  // 只有理髮師才有這個欄位（barbers 表的 id）
+  barber_id?: string;
 }
 
-// 理髮師
+// Barber
 export interface Barber {
   id: string;
   user_id: string;
@@ -35,7 +37,7 @@ export interface Barber {
   user?: User;
 }
 
-// 服務項目
+// Service
 export interface Service {
   id: string;
   name: string;
@@ -46,7 +48,7 @@ export interface Service {
   created_at: string;
 }
 
-// 可預約時段
+// Availability slot
 export interface Availability {
   id: string;
   barber_id: string;
@@ -54,13 +56,13 @@ export interface Availability {
   specific_date?: string; // YYYY-MM-DD
   start_time: string; // HH:mm
   end_time: string; // HH:mm
-  is_exception: boolean; // true = 請假或特別營業
+  is_exception: boolean; // true = day off or special hours
 }
 
-// 預約狀態
+// Booking status
 export type BookingStatus = 'confirmed' | 'cancelled' | 'completed';
 
-// 預約
+// Booking
 export interface Booking {
   id: string;
   customer_id: string;
@@ -68,22 +70,28 @@ export interface Booking {
   booking_date: string; // YYYY-MM-DD
   start_time: string; // HH:mm
   end_time: string; // HH:mm
-  total_duration: number; // 分鐘
+  total_duration: number; // minutes
   total_price: number;
   status: BookingStatus;
   created_at: string;
   customer?: User;
   barber?: Barber;
-  services?: Service[];
+  services?: { service: Service }[];
+  // 顧客備註
+  customer_note?: string;
+  note_updated_at?: string;
+  // 取消相關
+  cancellation_reason?: string;
+  cancelled_by?: 'customer' | 'barber';
 }
 
-// 預約服務項目（多對多關聯）
+// Booking service (many-to-many relation)
 export interface BookingService {
   booking_id: string;
   service_id: string;
 }
 
-// 時段選項
+// Time slot
 export interface TimeSlot {
   start_time: string;
   end_time: string;

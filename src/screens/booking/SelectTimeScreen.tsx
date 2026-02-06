@@ -1,16 +1,16 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import {
-  Text,
-  Button,
-  Divider,
-  ActivityIndicator,
-  useTheme
-} from 'react-native-paper';
+  View,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  StatusBar,
+} from 'react-native';
+import { Text, ActivityIndicator } from 'react-native-paper';
 import { Calendar, DateData } from 'react-native-calendars';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { supabase } from '../../services/supabase';
-import { Availability, Booking, TimeSlot } from '../../types';
+import { Availability, Booking } from '../../types';
 import { BookingStackParamList } from '../../navigation/types';
 import {
   getAvailableSlots,
@@ -18,18 +18,19 @@ import {
   getDayOfWeek,
   addMinutesToTime
 } from '../../utils/timeSlots';
+import { colors, spacing, borderRadius, typography } from '../../theme';
 
 type Props = NativeStackScreenProps<BookingStackParamList, 'SelectDateTime'>;
 
 export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
   const { barberId, selectedServices, totalDuration, totalPrice } = route.params;
-  const theme = useTheme();
 
   const [selectedDate, setSelectedDate] = useState<string>(formatDate(new Date()));
   const [availability, setAvailability] = useState<Availability | null>(null);
   const [existingBookings, setExistingBookings] = useState<Booking[]>([]);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
   const today = useMemo(() => formatDate(new Date()), []);
 
@@ -42,7 +43,8 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
     setSelectedTime(null);
 
     try {
-      const dateObj = new Date(date);
+      setFetchError(false);
+      const dateObj = new Date(date + 'T00:00:00');
       const dayOfWeek = getDayOfWeek(dateObj);
 
       // Fetch availability for this day
@@ -65,14 +67,16 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
       setAvailability(availData?.[0] || null);
       setExistingBookings(bookingsData || []);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      if (__DEV__) console.error('Error fetching data:', error);
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
   };
 
   const timeSlots = useMemo(() => {
-    return getAvailableSlots(availability, existingBookings, totalDuration, selectedDate);
+    // 只允許整點預約（60分鐘間隔）
+    return getAvailableSlots(availability, existingBookings, totalDuration, selectedDate, 60);
   }, [availability, existingBookings, totalDuration, selectedDate]);
 
   const handleDateSelect = (day: DateData) => {
@@ -96,37 +100,56 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const markedDates = {
-    [selectedDate]: { selected: true, selectedColor: theme.colors.primary },
+    [selectedDate]: { selected: true, selectedColor: colors.primary },
   };
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <Calendar
-          current={selectedDate}
-          minDate={today}
-          onDayPress={handleDateSelect}
-          markedDates={markedDates}
-          theme={{
-            todayTextColor: theme.colors.primary,
-            selectedDayBackgroundColor: theme.colors.primary,
-          }}
-        />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Calendar */}
+        <View style={styles.calendarContainer}>
+          <Calendar
+            current={selectedDate}
+            minDate={today}
+            onDayPress={handleDateSelect}
+            markedDates={markedDates}
+            theme={{
+              calendarBackground: colors.background,
+              textSectionTitleColor: colors.mutedForeground,
+              dayTextColor: colors.foreground,
+              todayTextColor: colors.primary,
+              selectedDayBackgroundColor: colors.primary,
+              selectedDayTextColor: colors.primaryForeground,
+              monthTextColor: colors.foreground,
+              arrowColor: colors.foreground,
+              textDisabledColor: colors.mutedForeground,
+              textDayFontSize: 14,
+              textMonthFontSize: 16,
+              textDayHeaderFontSize: 12,
+            }}
+            hideExtraDays
+            enableSwipeMonths
+          />
+        </View>
+
+        {/* Available Times Section */}
         <View style={styles.slotsContainer}>
-          <Text variant="titleMedium" style={styles.slotsTitle}>
-            {selectedDate} 可選時段
-          </Text>
-          <Text variant="bodySmall" style={styles.durationText}>
-            需要 {totalDuration} 分鐘
-          </Text>
+          <Text style={styles.slotsTitle}>可預約時段</Text>
 
           {loading ? (
-            <ActivityIndicator style={styles.loader} />
+            <ActivityIndicator style={styles.loader} color={colors.primary} />
+          ) : fetchError ? (
+            <Text style={styles.noSlots}>載入失敗，請選擇其他日期或重試</Text>
           ) : !availability ? (
-            <Text style={styles.noSlots}>該日休息，無法預約</Text>
+            <Text style={styles.noSlots}>當日公休</Text>
           ) : timeSlots.filter(s => s.available).length === 0 ? (
-            <Text style={styles.noSlots}>該日無可用時段</Text>
+            <Text style={styles.noSlots}>沒有可預約的時段</Text>
           ) : (
             <View style={styles.slotsGrid}>
               {timeSlots.map((slot) => (
@@ -139,6 +162,7 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
                   ]}
                   onPress={() => slot.available && setSelectedTime(slot.start_time)}
                   disabled={!slot.available}
+                  activeOpacity={0.7}
                 >
                   <Text
                     style={[
@@ -154,35 +178,35 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
             </View>
           )}
         </View>
+
+        {/* Selection Info */}
+        {selectedTime && (
+          <View style={styles.selectionInfo}>
+            <Text style={styles.selectionLabel}>已選擇</Text>
+            <Text style={styles.selectionValue}>
+              {selectedDate.split('-').slice(1).join('/')} • {selectedTime}
+            </Text>
+          </View>
+        )}
       </ScrollView>
 
-      <View style={styles.summaryBar}>
-        <Divider />
-        <View style={styles.summaryContent}>
-          <View>
-            {selectedTime ? (
-              <>
-                <Text variant="bodyMedium">
-                  已選：{selectedDate} {selectedTime}
-                </Text>
-                <Text variant="bodySmall" style={styles.summaryDetail}>
-                  預計結束：{addMinutesToTime(selectedTime, totalDuration)}
-                </Text>
-              </>
-            ) : (
-              <Text variant="bodyMedium" style={styles.summaryDetail}>
-                請選擇時段
-              </Text>
-            )}
-          </View>
-          <Button
-            mode="contained"
-            onPress={handleNext}
-            disabled={!selectedTime}
-          >
-            下一步
-          </Button>
-        </View>
+      {/* Bottom Bar */}
+      <View style={styles.bottomBar}>
+        <TouchableOpacity
+          style={[
+            styles.confirmButton,
+            !selectedTime && styles.confirmButtonDisabled,
+          ]}
+          onPress={handleNext}
+          disabled={!selectedTime}
+        >
+          <Text style={[
+            styles.confirmButtonText,
+            !selectedTime && styles.confirmButtonTextDisabled,
+          ]}>
+            繼續
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -191,76 +215,119 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    paddingBottom: 100,
+  },
+  calendarContainer: {
+    marginHorizontal: spacing.md,
+  },
   slotsContainer: {
-    padding: 16,
+    padding: spacing.md,
   },
   slotsTitle: {
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  durationText: {
-    color: '#666',
-    marginBottom: 16,
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontFamily.chineseMedium,
+    color: colors.primary,
+    letterSpacing: 2,
+    marginBottom: spacing.md,
   },
   loader: {
-    marginTop: 24,
+    marginTop: spacing.xl,
   },
   noSlots: {
     textAlign: 'center',
-    color: '#666',
-    marginTop: 24,
+    color: colors.mutedForeground,
+    marginTop: spacing.xl,
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.chinese,
   },
   slotsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   slotButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: '#fff',
+    paddingVertical: spacing.sm + 4,
+    paddingHorizontal: spacing.md,
+    borderRadius: 0, 
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#ddd',
-    minWidth: 80,
+    borderColor: colors.border,
+    minWidth: 76,
     alignItems: 'center',
   },
   slotDisabled: {
-    backgroundColor: '#f0f0f0',
-    borderColor: '#e0e0e0',
+    backgroundColor: colors.secondary,
+    borderColor: colors.secondary,
+    opacity: 0.5,
   },
   slotSelected: {
-    backgroundColor: '#6750A4',
-    borderColor: '#6750A4',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   slotText: {
-    fontSize: 14,
-    color: '#333',
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.body,
+    color: colors.foreground,
   },
   slotTextDisabled: {
-    color: '#bbb',
+    color: colors.mutedForeground,
   },
   slotTextSelected: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: colors.primaryForeground,
+    fontFamily: typography.fontFamily.secondarySemiBold,
   },
-  summaryBar: {
-    backgroundColor: '#fff',
-    paddingBottom: 24,
+  selectionInfo: {
+    backgroundColor: colors.card,
+    marginHorizontal: spacing.md,
+    padding: spacing.md,
+    borderRadius: 0, 
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginTop: spacing.md,
   },
-  summaryContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  selectionLabel: {
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontFamily.chinese,
+    color: colors.mutedForeground,
+    marginBottom: spacing.xs,
+  },
+  selectionValue: {
+    fontSize: typography.fontSize.md,
+    fontFamily: typography.fontFamily.bodyMedium,
+    color: colors.foreground,
+  },
+  bottomBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.card,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    padding: spacing.md,
+    paddingBottom: spacing.xl,
+  },
+  confirmButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 0, 
+    paddingVertical: spacing.md,
     alignItems: 'center',
-    padding: 16,
   },
-  summaryDetail: {
-    color: '#666',
-    marginTop: 4,
+  confirmButtonDisabled: {
+    backgroundColor: colors.secondary,
+  },
+  confirmButtonText: {
+    fontSize: typography.fontSize.md,
+    fontFamily: typography.fontFamily.chineseSemiBold,
+    color: colors.primaryForeground,
+  },
+  confirmButtonTextDisabled: {
+    color: colors.mutedForeground,
   },
 });

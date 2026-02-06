@@ -2,8 +2,8 @@ import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 
-const SUPABASE_URL = 'https://uokzhoteojtnluhpqvjj.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVva3pob3Rlb2p0bmx1aHBxdmpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NTE0MDgsImV4cCI6MjA4NTIyNzQwOH0.FRYXnVd2imCuK1WuJjkT5tdkZI91jYZEo_hDWS-HZt8';
+export const SUPABASE_URL = 'https://uokzhoteojtnluhpqvjj.supabase.co';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVva3pob3Rlb2p0bmx1aHBxdmpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NTE0MDgsImV4cCI6MjA4NTIyNzQwOH0.FRYXnVd2imCuK1WuJjkT5tdkZI91jYZEo_hDWS-HZt8';
 
 // 使用 SecureStore 來安全儲存認證 token
 const ExpoSecureStoreAdapter = {

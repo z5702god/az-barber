@@ -1,31 +1,47 @@
--- AZ Barber App - 初始資料
--- 在建立 schema 後執行
+-- AZ Barber App - Seed Data
+-- Run after creating schema
 
 -- =====================
--- 預設服務項目
+-- Dev Users (for development testing)
+-- =====================
+INSERT INTO users (id, name, email, role) VALUES
+  ('00000000-0000-0000-0000-000000000001', 'Dev User', 'dev@test.com', 'customer'),
+  ('00000000-0000-0000-0000-000000000002', '王小明', 'customer2@test.com', 'customer')
+ON CONFLICT (id) DO NOTHING;
+
+-- =====================
+-- Services
 -- =====================
 INSERT INTO services (name, duration_minutes, price, is_active, sort_order) VALUES
-  ('男士剪髮', 30, 350, TRUE, 1),
-  ('女士剪髮', 45, 450, TRUE, 2),
-  ('洗髮', 15, 100, TRUE, 3),
-  ('洗剪', 45, 400, TRUE, 4),
-  ('染髮', 90, 1500, TRUE, 5),
-  ('燙髮', 120, 2000, TRUE, 6),
-  ('護髮', 30, 500, TRUE, 7),
-  ('頭皮護理', 45, 800, TRUE, 8),
-  ('修容', 15, 150, TRUE, 9),
-  ('兒童剪髮', 20, 250, TRUE, 10);
+  ('洗剪', 60, 1000, TRUE, 1),
+  ('單剪', 60, 900, TRUE, 2),
+  ('單燙髮（肩上）', 120, 2000, TRUE, 3),
+  ('單燙髮（耳下）', 240, 2500, TRUE, 4),
+  ('單染髮', 120, 1800, TRUE, 5),
+  ('護髮（基礎）', 60, 300, TRUE, 6),
+  ('護髮（標準）', 60, 600, TRUE, 7),
+  ('護髮（深層）', 60, 800, TRUE, 8),
+  ('頭皮精油保養', 30, 800, TRUE, 9),
+  ('頭皮養髮保養', 60, 1200, TRUE, 10);
 
 -- =====================
--- 注意事項
+-- Setting Up Barber Availability
 -- =====================
--- 1. 店長帳號需要手動在 Supabase Auth 建立後，更新 users 表的 role 為 'owner'
--- 2. 理髮師帳號需要手動在 Supabase Auth 建立後，更新 users 表的 role 為 'barber'
---    並在 barbers 表建立對應記錄
---
--- 範例：將用戶設為店長
--- UPDATE users SET role = 'owner' WHERE id = '用戶的UUID';
---
--- 範例：新增理髮師
--- UPDATE users SET role = 'barber' WHERE id = '用戶的UUID';
--- INSERT INTO barbers (user_id, display_name) VALUES ('用戶的UUID', '理髮師名稱');
+-- After creating a barber, set their weekly availability.
+-- This SQL adds default working hours for ALL barbers (Mon-Sat, 10:00-19:00):
+
+-- INSERT INTO availability (barber_id, day_of_week, start_time, end_time, is_exception)
+-- SELECT b.id, day_num, '10:00', '19:00', FALSE
+-- FROM barbers b
+-- CROSS JOIN (
+--   SELECT 1 as day_num UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL
+--   SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6
+-- ) days;
+
+-- =====================
+-- Notes
+-- =====================
+-- 1. Owner: UPDATE users SET role = 'owner' WHERE id = 'USER_UUID';
+-- 2. Barber:
+--    UPDATE users SET role = 'barber' WHERE id = 'USER_UUID';
+--    INSERT INTO barbers (user_id, display_name) VALUES ('USER_UUID', 'Name');

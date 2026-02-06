@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
+import { removePushToken } from '../services/notifications';
 import { User, UserRole } from '../types';
 
 interface AuthContextType {
@@ -9,6 +10,7 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  isDevMode: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -17,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signOut: async () => {},
   refreshUser: async () => {},
+  isDevMode: false,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -31,7 +34,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 取得目前的 session
+    // Get current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
@@ -41,7 +44,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     });
 
-    // 監聽認證狀態變化
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
@@ -66,18 +69,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         .single();
 
       if (error) {
-        // 如果用戶資料不存在，建立新用戶
+        // If user profile doesn't exist, create a new one
         if (error.code === 'PGRST116') {
           const newUser = await createUserProfile(userId);
           setUser(newUser);
-        } else {
-          console.error('Error fetching user profile:', error);
         }
       } else {
-        setUser(data as User);
+        let userData = data as User;
+
+        // If barber, get barber_id from barbers table
+        if (userData.role === 'barber') {
+          const { data: barberData } = await supabase
+            .from('barbers')
+            .select('id')
+            .eq('user_id', userId)
+            .single();
+
+          if (barberData) {
+            userData = { ...userData, barber_id: barberData.id };
+          }
+        }
+
+        setUser(userData);
       }
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
+    } catch (_error) {
+      // Error fetching user profile
     } finally {
       setLoading(false);
     }
@@ -102,7 +118,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       .single();
 
     if (error) {
-      console.error('Error creating user profile:', error);
       return null;
     }
 
@@ -110,6 +125,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const signOut = async () => {
+    // Clean up push token before signing out
+    if (user?.id) {
+      try {
+        await removePushToken(user.id);
+      } catch (_e) {
+        // Silently ignore push token removal errors
+      }
+    }
+
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
@@ -122,7 +146,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, signOut, refreshUser }}>
+    <AuthContext.Provider value={{ session, user, loading, signOut, refreshUser, isDevMode: false }}>
       {children}
     </AuthContext.Provider>
   );

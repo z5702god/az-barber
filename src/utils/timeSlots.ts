@@ -1,12 +1,13 @@
 import { Availability, Booking, TimeSlot } from '../types';
 
 /**
- * Generate 30-minute time slots for a given availability window
+ * Generate time slots for a given availability window
+ * 預設為 60 分鐘間隔（只接受整點預約）
  */
 export const generateTimeSlots = (
   startTime: string,
   endTime: string,
-  intervalMinutes: number = 30
+  intervalMinutes: number = 60
 ): string[] => {
   const slots: string[] = [];
   const [startHour, startMin] = startTime.split(':').map(Number);
@@ -88,13 +89,14 @@ export const getAvailableSlots = (
   availability: Availability | null,
   existingBookings: Booking[],
   requiredDuration: number,
-  selectedDate?: string
+  selectedDate?: string,
+  intervalMinutes: number = 60
 ): TimeSlot[] => {
   if (!availability) {
     return [];
   }
 
-  const allSlots = generateTimeSlots(availability.start_time, availability.end_time);
+  const allSlots = generateTimeSlots(availability.start_time, availability.end_time, intervalMinutes);
   const dateToCheck = selectedDate || formatDate(new Date());
 
   return allSlots.map(slot => ({
@@ -117,10 +119,17 @@ export const addMinutesToTime = (time: string, minutes: number): string => {
 };
 
 /**
- * Format date to YYYY-MM-DD
+ * Format date to YYYY-MM-DD (using local timezone)
  */
 export const formatDate = (date: Date): string => {
-  return date.toISOString().split('T')[0];
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+/**
+ * Get local date string in YYYY-MM-DD format
+ */
+export const getLocalDateString = (date: Date = new Date()): string => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
 /**

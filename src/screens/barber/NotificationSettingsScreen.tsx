@@ -1,0 +1,328 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+  Alert,
+} from 'react-native';
+import { Text, Switch, ActivityIndicator } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../services/supabase';
+import { colors, spacing, typography } from '../../theme';
+
+interface NotificationPreferences {
+  push_enabled: boolean;
+  new_booking: boolean;
+  booking_reminder: boolean;
+  booking_changes: boolean;
+}
+
+const DEFAULT_PREFERENCES: NotificationPreferences = {
+  push_enabled: true,
+  new_booking: true,
+  booking_reminder: true,
+  booking_changes: true,
+};
+
+export const NotificationSettingsScreen: React.FC = () => {
+  const navigation = useNavigation();
+  const { user, refreshUser } = useAuth();
+  const [preferences, setPreferences] = useState<NotificationPreferences>(DEFAULT_PREFERENCES);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    loadPreferences();
+  }, []);
+
+  const loadPreferences = async () => {
+    try {
+      if (user?.preferences) {
+        setPreferences({
+          ...DEFAULT_PREFERENCES,
+          ...user.preferences,
+        });
+      }
+    } catch (_error) {
+      // silently handle error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updatePreference = async (key: keyof NotificationPreferences, value: boolean) => {
+    if (!user?.id) return;
+
+    // Optimistic update
+    const newPreferences = { ...preferences, [key]: value };
+    setPreferences(newPreferences);
+
+    setSaving(true);
+    try {
+      // Read existing preferences first
+      const { data: userData } = await supabase
+        .from('users')
+        .select('preferences')
+        .eq('id', user.id)
+        .single();
+      const existingPrefs = (userData?.preferences as Record<string, any>) || {};
+      const mergedPrefs = { ...existingPrefs, ...newPreferences };
+
+      const { error } = await supabase
+        .from('users')
+        .update({ preferences: mergedPrefs })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Refresh user data
+      if (refreshUser) {
+        await refreshUser();
+      }
+    } catch (_error) {
+      // Revert on error
+      setPreferences(preferences);
+      Alert.alert('錯誤', '更新失敗');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const SwitchRow = ({
+    icon,
+    title,
+    description,
+    value,
+    onValueChange,
+    disabled = false,
+  }: {
+    icon: string;
+    title: string;
+    description?: string;
+    value: boolean;
+    onValueChange: (value: boolean) => void;
+    disabled?: boolean;
+  }) => (
+    <View style={[styles.switchRow, disabled && styles.switchRowDisabled]}>
+      <View style={styles.switchLeft}>
+        <Ionicons
+          name={icon as any}
+          size={22}
+          color={disabled ? colors.border : colors.mutedForeground}
+        />
+        <View style={styles.switchTextContainer}>
+          <Text style={[styles.switchTitle, disabled && styles.textDisabled]}>
+            {title}
+          </Text>
+          {description && (
+            <Text style={[styles.switchDescription, disabled && styles.textDisabled]}>
+              {description}
+            </Text>
+          )}
+        </View>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        disabled={disabled || saving}
+        color={colors.primary}
+      />
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+
+      {/* Custom Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.foreground} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>通知設定</Text>
+        <View style={styles.headerRight}>
+          {saving && <ActivityIndicator size="small" color={colors.primary} />}
+        </View>
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Push Notification Master Toggle */}
+        <Text style={styles.sectionTitle}>PUSH NOTIFICATIONS</Text>
+        <View style={styles.card}>
+          <SwitchRow
+            icon="notifications"
+            title="啟用推播通知"
+            description="關閉後將不會收到任何推播通知"
+            value={preferences.push_enabled}
+            onValueChange={(value) => updatePreference('push_enabled', value)}
+          />
+        </View>
+
+        {/* Booking Notifications */}
+        <Text style={styles.sectionTitle}>BOOKING NOTIFICATIONS</Text>
+        <View style={styles.card}>
+          <SwitchRow
+            icon="calendar"
+            title="新預約通知"
+            description="有客人預約時通知我"
+            value={preferences.new_booking}
+            onValueChange={(value) => updatePreference('new_booking', value)}
+            disabled={!preferences.push_enabled}
+          />
+          <View style={styles.divider} />
+          <SwitchRow
+            icon="alarm"
+            title="預約提醒"
+            description="預約時間前 30 分鐘提醒"
+            value={preferences.booking_reminder}
+            onValueChange={(value) => updatePreference('booking_reminder', value)}
+            disabled={!preferences.push_enabled}
+          />
+          <View style={styles.divider} />
+          <SwitchRow
+            icon="sync"
+            title="預約變更通知"
+            description="客人取消或修改預約時通知我"
+            value={preferences.booking_changes}
+            onValueChange={(value) => updatePreference('booking_changes', value)}
+            disabled={!preferences.push_enabled}
+          />
+        </View>
+
+        {/* Info Note */}
+        <View style={styles.infoNote}>
+          <Ionicons name="information-circle-outline" size={16} color={colors.mutedForeground} />
+          <Text style={styles.infoText}>
+            通知設定會即時儲存。如果您未收到通知，請檢查裝置的通知權限設定。
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  backButton: {
+    padding: spacing.sm,
+  },
+  headerTitle: {
+    fontSize: typography.fontSize.lg,
+    fontFamily: typography.fontFamily.chineseSemiBold,
+    color: colors.foreground,
+  },
+  headerRight: {
+    width: 32,
+    alignItems: 'flex-end',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: spacing.lg,
+    paddingBottom: spacing.xxl,
+  },
+  sectionTitle: {
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontFamily.primaryMedium,
+    color: colors.primary,
+    letterSpacing: 2,
+    marginBottom: spacing.md,
+    marginTop: spacing.md,
+  },
+  card: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 0,
+  },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.md,
+  },
+  switchRowDisabled: {
+    opacity: 0.5,
+  },
+  switchLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: spacing.md,
+  },
+  switchTextContainer: {
+    flex: 1,
+  },
+  switchTitle: {
+    fontSize: typography.fontSize.md,
+    fontFamily: typography.fontFamily.chineseMedium,
+    color: colors.foreground,
+  },
+  switchDescription: {
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontFamily.chinese,
+    color: colors.mutedForeground,
+    marginTop: 2,
+  },
+  textDisabled: {
+    color: colors.mutedForeground,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  infoNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    marginTop: spacing.xl,
+    paddingHorizontal: spacing.sm,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontFamily.chinese,
+    color: colors.mutedForeground,
+    lineHeight: 18,
+  },
+});

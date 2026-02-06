@@ -1,42 +1,110 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, Card, Button, Chip } from 'react-native-paper';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  StatusBar,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { Text } from 'react-native-paper';
 import { Calendar, DateData } from 'react-native-calendars';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
-import { useBarberBookings, useUpdateBookingStatus } from '../../hooks/useBarberData';
+import { useBarberBookings, useBarberMonthlyBookingDates, useUpdateBookingStatus } from '../../hooks/useBarberData';
 import { BarberTabParamList } from '../../navigation/types';
+import { colors, spacing, typography } from '../../theme';
+import { Booking } from '../../types';
 
 type Props = NativeStackScreenProps<BarberTabParamList, 'BookingCalendar'>;
 
 export const BookingCalendarScreen: React.FC<Props> = () => {
   const { user } = useAuth();
-  const barberId = user?.id || '';
+  // 使用 barber_id（barbers 表的 ID），而非 user.id（users 表的 ID）
+  const barberId = user?.barber_id || '';
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7)); // "YYYY-MM"
 
   const { bookings, loading, refetch } = useBarberBookings(barberId, selectedDate);
-  const { updateStatus, updating } = useUpdateBookingStatus();
+  const { bookedDates, refetch: refetchDates } = useBarberMonthlyBookingDates(barberId, currentMonth);
+  const { cancelBooking, updating } = useUpdateBookingStatus();
+
+  // 取消預約 Modal 狀態
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
 
   const handleDayPress = (day: DateData) => {
     setSelectedDate(day.dateString);
   };
 
-  const handleComplete = async (bookingId: string) => {
-    await updateStatus(bookingId, 'completed');
-    refetch();
+  const handleMonthChange = (month: DateData) => {
+    setCurrentMonth(month.dateString.slice(0, 7));
   };
 
-  const handleCancel = async (bookingId: string) => {
-    await updateStatus(bookingId, 'cancelled');
-    refetch();
+  // Generate marked dates with gold dots for dates with bookings
+  const generateMarkedDates = () => {
+    const marked: { [key: string]: any } = {};
+
+    // Add gold dots for all booked dates
+    bookedDates.forEach(date => {
+      marked[date] = {
+        marked: true,
+        dotColor: colors.primary,
+      };
+    });
+
+    // Add selection highlight for selected date
+    if (marked[selectedDate]) {
+      marked[selectedDate] = {
+        ...marked[selectedDate],
+        selected: true,
+        selectedColor: colors.primary,
+      };
+    } else {
+      marked[selectedDate] = {
+        selected: true,
+        selectedColor: colors.primary,
+      };
+    }
+
+    return marked;
+  };
+
+  const handleOpenCancelModal = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setCancelReason('');
+    setCancelModalVisible(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!selectedBooking || !cancelReason.trim()) return;
+
+    const result = await cancelBooking(
+      selectedBooking.id,
+      cancelReason.trim(),
+      user?.name || '理髮師'
+    );
+
+    if (result.success) {
+      setCancelModalVisible(false);
+      setSelectedBooking(null);
+      setCancelReason('');
+      refetch();
+      refetchDates(); // Refresh calendar dots
+    }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'confirmed': return '#2196F3';
-      case 'completed': return '#4CAF50';
-      case 'cancelled': return '#9E9E9E';
-      default: return '#666';
+      case 'confirmed': return colors.primary;
+      case 'completed': return colors.primary; // 金色
+      case 'cancelled': return colors.mutedForeground;
+      default: return colors.mutedForeground;
     }
   };
 
@@ -55,81 +123,177 @@ export const BookingCalendarScreen: React.FC<Props> = () => {
     weekday: 'long',
   });
 
+  const calendarTheme = {
+    backgroundColor: colors.background,
+    calendarBackground: colors.card,
+    textSectionTitleColor: colors.mutedForeground,
+    selectedDayBackgroundColor: colors.primary,
+    selectedDayTextColor: colors.primaryForeground,
+    todayTextColor: colors.primary,
+    dayTextColor: colors.foreground,
+    textDisabledColor: colors.border,
+    dotColor: colors.primary,
+    selectedDotColor: colors.primaryForeground,
+    arrowColor: colors.primary,
+    monthTextColor: colors.foreground,
+    textDayFontFamily: typography.fontFamily.body,
+    textMonthFontFamily: typography.fontFamily.displayMedium,
+    textDayHeaderFontFamily: typography.fontFamily.body,
+  };
+
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+
       <Calendar
         onDayPress={handleDayPress}
-        markedDates={{
-          [selectedDate]: { selected: true, selectedColor: '#2196F3' },
-        }}
-        theme={{
-          todayTextColor: '#2196F3',
-          selectedDayBackgroundColor: '#2196F3',
-        }}
+        onMonthChange={handleMonthChange}
+        markedDates={generateMarkedDates()}
+        theme={calendarTheme}
+        style={styles.calendar}
       />
 
       <View style={styles.dateHeader}>
-        <Text variant="titleMedium">{formattedDate}</Text>
-        <Text variant="bodySmall">{bookings.length} 個預約</Text>
+        <Text style={styles.dateTitle}>{formattedDate}</Text>
+        <Text style={styles.bookingCount}>{bookings.length} 筆預約</Text>
       </View>
 
-      <ScrollView style={styles.bookingList}>
+      <ScrollView style={styles.bookingList} showsVerticalScrollIndicator={false}>
         {bookings.length === 0 ? (
-          <Card style={styles.emptyCard}>
-            <Card.Content>
-              <Text style={styles.emptyText}>這天沒有預約</Text>
-            </Card.Content>
-          </Card>
+          <View style={styles.emptyContainer}>
+            <Ionicons name="calendar-outline" size={48} color={colors.mutedForeground} />
+            <Text style={styles.emptyText}>今日無預約</Text>
+          </View>
         ) : (
-          bookings.map((booking) => (
-            <Card key={booking.id} style={styles.bookingCard}>
-              <Card.Content>
-                <View style={styles.bookingHeader}>
-                  <Chip
-                    style={{ backgroundColor: getStatusColor(booking.status) }}
-                    textStyle={{ color: '#fff', fontSize: 12 }}
-                  >
-                    {getStatusLabel(booking.status)}
-                  </Chip>
-                  <Text variant="titleMedium">
-                    {booking.start_time} - {booking.end_time}
+          bookings.map((booking) => {
+            // 優先顯示 name，若無則用 email 或 phone
+            const customerDisplayName = booking.customer?.name
+              || booking.customer?.email?.split('@')[0]
+              || booking.customer?.phone
+              || '顧客';
+            return (
+            <View key={booking.id} style={styles.bookingCard}>
+              <View style={styles.bookingHeader}>
+                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) }]}>
+                  <Text style={styles.statusText}>{getStatusLabel(booking.status)}</Text>
+                </View>
+                <View style={styles.timeContainer}>
+                  <Ionicons name="time-outline" size={16} color={colors.mutedForeground} />
+                  <Text style={styles.timeText}>
+                    {booking.start_time?.slice(0, 5) || ''} - {booking.end_time?.slice(0, 5) || ''}
                   </Text>
                 </View>
-                <Text variant="bodyLarge" style={styles.customerName}>
-                  {booking.customer?.name}
-                </Text>
-                <Text variant="bodySmall" style={styles.serviceText}>
-                  {booking.services?.map((s: any) => s.service?.name).join(', ')}
-                </Text>
-                <Text variant="bodyMedium">${booking.total_price}</Text>
+              </View>
 
-                {booking.status === 'confirmed' && (
-                  <>
-                    <View style={styles.actionRow}>
-                      <Button
-                        mode="contained"
-                        onPress={() => handleComplete(booking.id)}
-                        disabled={updating}
-                        compact
-                      >
-                        完成
-                      </Button>
-                      <Button
-                        mode="outlined"
-                        onPress={() => handleCancel(booking.id)}
-                        disabled={updating}
-                        compact
-                      >
-                        取消
-                      </Button>
-                    </View>
-                  </>
+              <View style={styles.customerNameRow}>
+                <Text style={styles.customerName}>
+                  {customerDisplayName}
+                </Text>
+                {booking.customer_note && (
+                  <Ionicons name="chatbubble" size={14} color={colors.primary} />
                 )}
-              </Card.Content>
-            </Card>
-          ))
+              </View>
+
+              <Text style={styles.serviceText}>
+                {booking.services?.map((s: any) => s.service?.name).join(' + ')}
+              </Text>
+
+              <View style={styles.priceRow}>
+                <Ionicons name="cash-outline" size={16} color={colors.primary} />
+                <Text style={styles.priceText}>${booking.total_price}</Text>
+              </View>
+
+              {/* 顧客備註 */}
+              {booking.customer_note && (
+                <View style={styles.noteRow}>
+                  <Ionicons name="chatbubble-outline" size={14} color={colors.primary} />
+                  <Text style={styles.noteText}>{booking.customer_note}</Text>
+                </View>
+              )}
+
+              {booking.status === 'confirmed' && (
+                <View style={styles.actionRow}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => handleOpenCancelModal(booking)}
+                    disabled={updating}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="close" size={18} color={colors.destructive} />
+                    <Text style={styles.cancelButtonText}>取消預約</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          );
+          })
         )}
       </ScrollView>
+
+      {/* Cancel Booking Modal */}
+      <Modal
+        visible={cancelModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCancelModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modal}>
+            <Text style={styles.modalTitle}>取消預約</Text>
+            {selectedBooking && (
+              <View style={styles.modalBookingInfo}>
+                <Text style={styles.modalBookingText}>
+                  顧客：{selectedBooking.customer?.name
+                    || selectedBooking.customer?.email?.split('@')[0]
+                    || selectedBooking.customer?.phone
+                    || '顧客'}
+                </Text>
+                <Text style={styles.modalBookingText}>
+                  時間：{selectedBooking.start_time?.slice(0, 5) || ''}
+                </Text>
+              </View>
+            )}
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>取消原因（必填）</Text>
+              <TextInput
+                style={styles.reasonInput}
+                value={cancelReason}
+                onChangeText={setCancelReason}
+                placeholder="請輸入取消原因，顧客會收到推播通知"
+                placeholderTextColor={colors.mutedForeground}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+            </View>
+
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setCancelModalVisible(false)}
+              >
+                <Text style={styles.modalCancelButtonText}>返回</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.modalConfirmButton,
+                  !cancelReason.trim() && styles.modalConfirmButtonDisabled,
+                ]}
+                onPress={handleConfirmCancel}
+                disabled={!cancelReason.trim() || updating}
+              >
+                <Text style={styles.modalConfirmButtonText}>
+                  {updating ? '處理中...' : '確定取消'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 };
@@ -137,45 +301,223 @@ export const BookingCalendarScreen: React.FC<Props> = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
+  },
+  calendar: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   dateHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#fff',
+    padding: spacing.lg,
+    backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: colors.border,
+  },
+  dateTitle: {
+    fontSize: typography.fontSize.md,
+    fontFamily: typography.fontFamily.displayMedium,
+    color: colors.foreground,
+  },
+  bookingCount: {
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.body,
+    color: colors.mutedForeground,
   },
   bookingList: {
     flex: 1,
-    padding: 16,
+    padding: spacing.lg,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.xxl * 2,
+  },
+  emptyText: {
+    marginTop: spacing.md,
+    fontSize: typography.fontSize.md,
+    fontFamily: typography.fontFamily.body,
+    color: colors.mutedForeground,
   },
   bookingCard: {
-    marginBottom: 12,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 0,
+    padding: spacing.md,
+    marginBottom: spacing.md,
   },
   bookingHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
+  },
+  statusBadge: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+  },
+  statusText: {
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontFamily.secondaryMedium,
+    color: colors.primaryForeground,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  timeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  timeText: {
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.body,
+    color: colors.mutedForeground,
+  },
+  customerNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.xs,
   },
   customerName: {
-    marginVertical: 4,
+    fontSize: typography.fontSize.lg,
+    fontFamily: typography.fontFamily.chineseMedium,
+    color: colors.foreground,
   },
   serviceText: {
-    color: '#666',
-    marginBottom: 4,
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.body,
+    color: colors.mutedForeground,
+    marginBottom: spacing.sm,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  priceText: {
+    fontSize: typography.fontSize.md,
+    fontFamily: typography.fontFamily.displayBold,
+    color: colors.primary,
+  },
+  noteRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.xs,
+    backgroundColor: colors.background,
+    padding: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  noteText: {
+    flex: 1,
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.chinese,
+    color: colors.foreground,
+    lineHeight: 20,
   },
   actionRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginTop: 12,
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
-  emptyCard: {},
-  emptyText: {
-    textAlign: 'center',
-    color: '#666',
+  cancelButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.destructive,
+    paddingVertical: spacing.sm,
+  },
+  cancelButtonText: {
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.secondaryMedium,
+    color: colors.destructive,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    justifyContent: 'center',
+    padding: spacing.lg,
+  },
+  modal: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.lg,
+  },
+  modalTitle: {
+    fontSize: typography.fontSize.lg,
+    fontFamily: typography.fontFamily.displayMedium,
+    color: colors.foreground,
+    marginBottom: spacing.md,
+  },
+  modalBookingInfo: {
+    backgroundColor: colors.background,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    gap: spacing.xs,
+  },
+  modalBookingText: {
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.body,
+    color: colors.foreground,
+  },
+  inputGroup: {
+    marginBottom: spacing.md,
+  },
+  inputLabel: {
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.body,
+    color: colors.mutedForeground,
+    marginBottom: spacing.xs,
+  },
+  reasonInput: {
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    fontSize: typography.fontSize.md,
+    fontFamily: typography.fontFamily.body,
+    color: colors.foreground,
+    minHeight: 100,
+  },
+  modalButtonRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  modalCancelButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+  },
+  modalCancelButtonText: {
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.secondaryMedium,
+    color: colors.foreground,
+  },
+  modalConfirmButton: {
+    flex: 1,
+    backgroundColor: colors.destructive,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+  },
+  modalConfirmButtonDisabled: {
+    opacity: 0.5,
+  },
+  modalConfirmButtonText: {
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.secondaryMedium,
+    color: colors.primaryForeground,
   },
 });

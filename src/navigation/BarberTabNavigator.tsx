@@ -1,6 +1,5 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { BarberTabParamList } from './types';
@@ -9,14 +8,13 @@ import {
   BookingCalendarScreen,
   AvailabilityScreen,
   StatsScreen,
-  BarberProfileScreen,
 } from '../screens/barber';
+import { BarberProfileStackNavigator } from './BarberProfileStackNavigator';
+import { colors, typography } from '../theme';
 
 const Tab = createBottomTabNavigator<BarberTabParamList>();
 
 export const BarberTabNavigator: React.FC = () => {
-  const theme = useTheme();
-
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -45,8 +43,27 @@ export const BarberTabNavigator: React.FC = () => {
 
           return <Icon name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: 'gray',
+        // Dark theme tab bar styling
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.mutedForeground,
+        tabBarStyle: {
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+        },
+        tabBarLabelStyle: {
+          fontFamily: typography.fontFamily.secondary,
+          fontSize: 12,
+        },
+        // Dark theme header styling
+        headerStyle: {
+          backgroundColor: colors.background,
+        },
+        headerTintColor: colors.foreground,
+        headerTitleStyle: {
+          fontFamily: typography.fontFamily.primarySemiBold,
+          color: colors.foreground,
+        },
         headerShown: true,
       })}
     >
@@ -58,12 +75,12 @@ export const BarberTabNavigator: React.FC = () => {
       <Tab.Screen
         name="BookingCalendar"
         component={BookingCalendarScreen}
-        options={{ title: '預約', headerTitle: '預約管理' }}
+        options={{ title: '預約', headerTitle: '預約行事曆' }}
       />
       <Tab.Screen
         name="Availability"
         component={AvailabilityScreen}
-        options={{ title: '時段', headerTitle: '營業時段' }}
+        options={{ title: '時段', headerTitle: '營業時段設定' }}
       />
       <Tab.Screen
         name="Stats"
@@ -72,8 +89,8 @@ export const BarberTabNavigator: React.FC = () => {
       />
       <Tab.Screen
         name="BarberProfile"
-        component={BarberProfileScreen}
-        options={{ title: '我的', headerTitle: '個人資料' }}
+        component={BarberProfileStackNavigator}
+        options={{ title: '個人', headerShown: false }}
       />
     </Tab.Navigator>
   );

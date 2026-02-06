@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AZ Barber - Logo Concepts</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0A0A0A;
+      color: #FAFAFA;
+      font-family: 'Inter', sans-serif;
+      padding: 40px;
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      color: #C9A96E;
+      font-size: 32px;
+      text-align: center;
+      margin-bottom: 8px;
+      letter-spacing: 4px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #71717A;
+      font-size: 14px;
+      margin-bottom: 60px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .concept {
+      text-align: center;
+    }
+    .concept-label {
+      font-family: 'JetBrains Mono', monospace;
+      color: #C9A96E;
+      font-size: 14px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .concept-desc {
+      color: #71717A;
+      font-size: 13px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .logo-container {
+      width: 320px;
+      height: 320px;
+      margin: 0 auto 20px;
+      border: 1px solid #2A2A2A;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .sizes {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: flex-end;
+      margin-top: 16px;
+    }
+    .size-preview {
+      border: 1px solid #2A2A2A;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .size-label {
+      font-family: 'JetBrains Mono', monospace;
+      color: #71717A;
+      font-size: 10px;
+      margin-top: 4px;
+      text-align: center;
+    }
+    svg { display: block; }
+  </style>
+</head>
+<body>
+
+<h1>AZ BARBERSHOP</h1>
+<p class="subtitle">App Store Logo Concepts - 1024 x 1024</p>
+
+<div class="grid">
+
+  <!-- CONCEPT A: Lettermark -->
+  <div class="concept">
+    <div class="concept-label">Concept A</div>
+    <div class="concept-desc">Lettermark - 字母標誌<br>以 AZ 字母為主體，Playfair Display 襯線字體，金色漸層</div>
+    <div class="logo-container">
+      <svg width="320" height="320" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="goldA" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#D4B87A"/>
+            <stop offset="50%" style="stop-color:#C9A96E"/>
+            <stop offset="100%" style="stop-color:#B8944F"/>
+          </linearGradient>
+        </defs>
+        <rect width="1024" height="1024" fill="#111111"/>
+        <!-- Subtle border accent -->
+        <rect x="40" y="40" width="944" height="944" fill="none" stroke="#C9A96E" stroke-width="2" opacity="0.3"/>
+        <rect x="52" y="52" width="920" height="920" fill="none" stroke="#C9A96E" stroke-width="1" opacity="0.15"/>
+        <!-- AZ Text -->
+        <text x="512" y="560" text-anchor="middle" font-family="'Playfair Display', serif" font-weight="700" font-size="420" fill="url(#goldA)" letter-spacing="-10">AZ</text>
+        <!-- Thin line separator -->
+        <line x1="280" y1="640" x2="744" y2="640" stroke="#C9A96E" stroke-width="2" opacity="0.5"/>
+        <!-- BARBERSHOP subtitle -->
+        <text x="512" y="710" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="500" font-size="52" fill="#C9A96E" letter-spacing="28" opacity="0.8">BARBER</text>
+      </svg>
+    </div>
+    <div class="sizes">
+      <div>
+        <div class="size-preview" style="width:120px;height:120px;">
+          <svg width="120" height="120" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#111111"/><rect x="40" y="40" width="944" height="944" fill="none" stroke="#C9A96E" stroke-width="2" opacity="0.3"/><text x="512" y="560" text-anchor="middle" font-family="'Playfair Display', serif" font-weight="700" font-size="420" fill="#C9A96E" letter-spacing="-10">AZ</text><line x1="280" y1="640" x2="744" y2="640" stroke="#C9A96E" stroke-width="2" opacity="0.5"/><text x="512" y="710" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="500" font-size="52" fill="#C9A96E" letter-spacing="28" opacity="0.8">BARBER</text></svg>
+        </div>
+        <div class="size-label">120px</div>
+      </div>
+      <div>
+        <div class="size-preview" style="width:60px;height:60px;">
+          <svg width="60" height="60" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#111111"/><text x="512" y="580" text-anchor="middle" font-family="'Playfair Display', serif" font-weight="700" font-size="500" fill="#C9A96E" letter-spacing="-10">AZ</text></svg>
+        </div>
+        <div class="size-label">60px</div>
+      </div>
+      <div>
+        <div class="size-preview" style="width:40px;height:40px;">
+          <svg width="40" height="40" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#111111"/><text x="512" y="600" text-anchor="middle" font-family="'Playfair Display', serif" font-weight="700" font-size="560" fill="#C9A96E" letter-spacing="-10">AZ</text></svg>
+        </div>
+        <div class="size-label">40px</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONCEPT B: Icon + Text (Scissors) -->
+  <div class="concept">
+    <div class="concept-label">Concept B</div>
+    <div class="concept-desc">Icon + Text - 圖文結合<br>剪刀圖示融入 AZ 字母設計，專業理髮意象</div>
+    <div class="logo-container">
+      <svg width="320" height="320" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="goldB" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#D4B87A"/>
+            <stop offset="50%" style="stop-color:#C9A96E"/>
+            <stop offset="100%" style="stop-color:#B8944F"/>
+          </linearGradient>
+        </defs>
+        <rect width="1024" height="1024" fill="#111111"/>
+        <!-- Scissors icon above -->
+        <g transform="translate(512, 300)" fill="none" stroke="url(#goldB)" stroke-width="12" stroke-linecap="round">
+          <!-- Left blade -->
+          <ellipse cx="-60" cy="40" rx="48" ry="28" transform="rotate(-30 -60 40)"/>
+          <line x1="-30" y1="20" x2="60" y2="-100"/>
+          <!-- Right blade -->
+          <ellipse cx="60" cy="40" rx="48" ry="28" transform="rotate(30 60 40)"/>
+          <line x1="30" y1="20" x2="-60" y2="-100"/>
+          <!-- Center pivot -->
+          <circle cx="0" cy="0" r="10" fill="#C9A96E" stroke="none"/>
+        </g>
+        <!-- AZ Text -->
+        <text x="512" y="620" text-anchor="middle" font-family="'Playfair Display', serif" font-weight="700" font-size="280" fill="url(#goldB)" letter-spacing="10">AZ</text>
+        <!-- Separator line -->
+        <line x1="300" y1="670" x2="724" y2="670" stroke="#C9A96E" stroke-width="2" opacity="0.4"/>
+        <!-- BARBERSHOP -->
+        <text x="512" y="740" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="400" font-size="48" fill="#C9A96E" letter-spacing="22" opacity="0.7">BARBERSHOP</text>
+      </svg>
+    </div>
+    <div class="sizes">
+      <div>
+        <div class="size-preview" style="width:120px;height:120px;">
+          <svg width="120" height="120" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#111111"/><g transform="translate(512, 300)" fill="none" stroke="#C9A96E" stroke-width="12" stroke-linecap="round"><ellipse cx="-60" cy="40" rx="48" ry="28" transform="rotate(-30 -60 40)"/><line x1="-30" y1="20" x2="60" y2="-100"/><ellipse cx="60" cy="40" rx="48" ry="28" transform="rotate(30 60 40)"/><line x1="30" y1="20" x2="-60" y2="-100"/><circle cx="0" cy="0" r="10" fill="#C9A96E" stroke="none"/></g><text x="512" y="620" text-anchor="middle" font-family="'Playfair Display', serif" font-weight="700" font-size="280" fill="#C9A96E" letter-spacing="10">AZ</text><line x1="300" y1="670" x2="724" y2="670" stroke="#C9A96E" stroke-width="2" opacity="0.4"/><text x="512" y="740" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="400" font-size="48" fill="#C9A96E" letter-spacing="22" opacity="0.7">BARBERSHOP</text></svg>
+        </div>
+        <div class="size-label">120px</div>
+      </div>
+      <div>
+        <div class="size-preview" style="width:60px;height:60px;">
+          <svg width="60" height="60" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#111111"/><g transform="translate(512, 330)" fill="none" stroke="#C9A96E" stroke-width="16"><ellipse cx="-60" cy="40" rx="48" ry="28" transform="rotate(-30 -60 40)"/><line x1="-30" y1="20" x2="60" y2="-100"/><ellipse cx="60" cy="40" rx="48" ry="28" transform="rotate(30 60 40)"/><line x1="30" y1="20" x2="-60" y2="-100"/><circle cx="0" cy="0" r="14" fill="#C9A96E" stroke="none"/></g><text x="512" y="660" text-anchor="middle" font-family="'Playfair Display', serif" font-weight="700" font-size="320" fill="#C9A96E">AZ</text></svg>
+        </div>
+        <div class="size-label">60px</div>
+      </div>
+      <div>
+        <div class="size-preview" style="width:40px;height:40px;">
+          <svg width="40" height="40" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#111111"/><g transform="translate(512, 360)" fill="none" stroke="#C9A96E" stroke-width="22"><ellipse cx="-60" cy="40" rx="48" ry="28" transform="rotate(-30 -60 40)"/><line x1="-30" y1="20" x2="60" y2="-100"/><ellipse cx="60" cy="40" rx="48" ry="28" transform="rotate(30 60 40)"/><line x1="30" y1="20" x2="-60" y2="-100"/></g><text x="512" y="700" text-anchor="middle" font-family="'Playfair Display', serif" font-weight="700" font-size="360" fill="#C9A96E">AZ</text></svg>
+        </div>
+        <div class="size-label">40px</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONCEPT C: Emblem / Shield -->
+  <div class="concept">
+    <div class="concept-label">Concept C</div>
+    <div class="concept-desc">Emblem - 徽章/紋章風格<br>AZ 置於六角形框架中，經典高端理髮店的感覺</div>
+    <div class="logo-container">
+      <svg width="320" height="320" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="goldC" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#D4B87A"/>
+            <stop offset="50%" style="stop-color:#C9A96E"/>
+            <stop offset="100%" style="stop-color:#B8944F"/>
+          </linearGradient>
+        </defs>
+        <rect width="1024" height="1024" fill="#111111"/>
+        <!-- Hexagon frame -->
+        <polygon points="512,120 862,312 862,712 512,904 162,712 162,312" fill="none" stroke="url(#goldC)" stroke-width="6"/>
+        <!-- Inner hexagon -->
+        <polygon points="512,180 820,348 820,676 512,844 204,676 204,348" fill="none" stroke="#C9A96E" stroke-width="1.5" opacity="0.3"/>
+        <!-- Corner accents - top -->
+        <line x1="462" y1="160" x2="562" y2="160" stroke="#C9A96E" stroke-width="3" opacity="0.5"/>
+        <!-- AZ Text -->
+        <text x="512" y="540" text-anchor="middle" font-family="'Playfair Display', serif" font-weight="700" font-size="320" fill="url(#goldC)" letter-spacing="5">AZ</text>
+        <!-- Top decorative line -->
+        <line x1="320" y1="300" x2="704" y2="300" stroke="#C9A96E" stroke-width="1.5" opacity="0.4"/>
+        <!-- EST text above -->
+        <text x="512" y="280" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="400" font-size="36" fill="#C9A96E" letter-spacing="16" opacity="0.6">ESTABLISHED</text>
+        <!-- Bottom decorative line -->
+        <line x1="320" y1="610" x2="704" y2="610" stroke="#C9A96E" stroke-width="1.5" opacity="0.4"/>
+        <!-- BARBERSHOP below -->
+        <text x="512" y="680" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="500" font-size="50" fill="#C9A96E" letter-spacing="18" opacity="0.8">BARBER</text>
+        <!-- Year -->
+        <text x="512" y="760" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="400" font-size="40" fill="#C9A96E" letter-spacing="12" opacity="0.5">2024</text>
+      </svg>
+    </div>
+    <div class="sizes">
+      <div>
+        <div class="size-preview" style="width:120px;height:120px;">
+          <svg width="120" height="120" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#111111"/><polygon points="512,120 862,312 862,712 512,904 162,712 162,312" fill="none" stroke="#C9A96E" stroke-width="6"/><text x="512" y="560" text-anchor="middle" font-family="'Playfair Display', serif" font-weight="700" font-size="360" fill="#C9A96E" letter-spacing="5">AZ</text><text x="512" y="700" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="500" font-size="56" fill="#C9A96E" letter-spacing="18" opacity="0.8">BARBER</text></svg>
+        </div>
+        <div class="size-label">120px</div>
+      </div>
+      <div>
+        <div class="size-preview" style="width:60px;height:60px;">
+          <svg width="60" height="60" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#111111"/><polygon points="512,140 840,320 840,704 512,884 184,704 184,320" fill="none" stroke="#C9A96E" stroke-width="10"/><text x="512" y="580" text-anchor="middle" font-family="'Playfair Display', serif" font-weight="700" font-size="400" fill="#C9A96E">AZ</text></svg>
+        </div>
+        <div class="size-label">60px</div>
+      </div>
+      <div>
+        <div class="size-preview" style="width:40px;height:40px;">
+          <svg width="40" height="40" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#111111"/><polygon points="512,160 820,330 820,694 512,864 204,694 204,330" fill="none" stroke="#C9A96E" stroke-width="16"/><text x="512" y="600" text-anchor="middle" font-family="'Playfair Display', serif" font-weight="700" font-size="440" fill="#C9A96E">AZ</text></svg>
+        </div>
+        <div class="size-label">40px</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONCEPT D: Monogram / Interlock -->
+  <div class="concept">
+    <div class="concept-label">Concept D</div>
+    <div class="concept-desc">Monogram - 交織字母<br>A 和 Z 字母優雅交織，搭配直角幾何框架，現代奢華感</div>
+    <div class="logo-container">
+      <svg width="320" height="320" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="goldD" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#D4B87A"/>
+            <stop offset="50%" style="stop-color:#C9A96E"/>
+            <stop offset="100%" style="stop-color:#B8944F"/>
+          </linearGradient>
+        </defs>
+        <rect width="1024" height="1024" fill="#111111"/>
+        <!-- Square frame with corner cuts (angular style matching the app) -->
+        <path d="M 160,80 L 864,80 L 944,160 L 944,864 L 864,944 L 160,944 L 80,864 L 80,160 Z" fill="none" stroke="url(#goldD)" stroke-width="4"/>
+        <!-- Inner line -->
+        <path d="M 190,110 L 834,110 L 914,190 L 914,834 L 834,914 L 190,914 L 110,834 L 110,190 Z" fill="none" stroke="#C9A96E" stroke-width="1" opacity="0.2"/>
+        <!-- Stylized A - left side -->
+        <g fill="none" stroke="url(#goldD)" stroke-width="14" stroke-linecap="square">
+          <!-- A: Left leg -->
+          <line x1="260" y1="700" x2="420" y2="280"/>
+          <!-- A: Right leg (shared with Z) -->
+          <line x1="580" y1="280" x2="420" y2="280"/>
+          <!-- A: Crossbar -->
+          <line x1="310" y1="540" x2="530" y2="540"/>
+          <!-- A: Right leg down -->
+          <line x1="580" y1="280" x2="580" y2="500"/>
+        </g>
+        <!-- Stylized Z - right side, interlocking -->
+        <g fill="none" stroke="url(#goldD)" stroke-width="14" stroke-linecap="square">
+          <!-- Z: Top bar -->
+          <line x1="460" y1="380" x2="760" y2="380"/>
+          <!-- Z: Diagonal -->
+          <line x1="760" y1="380" x2="460" y2="700"/>
+          <!-- Z: Bottom bar -->
+          <line x1="460" y1="700" x2="760" y2="700"/>
+        </g>
+        <!-- Decorative dot at intersection -->
+        <rect x="570" y="370" width="20" height="20" fill="#C9A96E"/>
+        <!-- Bottom text -->
+        <text x="512" y="840" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="500" font-size="42" fill="#C9A96E" letter-spacing="20" opacity="0.7">BARBERSHOP</text>
+      </svg>
+    </div>
+    <div class="sizes">
+      <div>
+        <div class="size-preview" style="width:120px;height:120px;">
+          <svg width="120" height="120" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#111111"/><path d="M 160,80 L 864,80 L 944,160 L 944,864 L 864,944 L 160,944 L 80,864 L 80,160 Z" fill="none" stroke="#C9A96E" stroke-width="4"/><g fill="none" stroke="#C9A96E" stroke-width="14" stroke-linecap="square"><line x1="260" y1="700" x2="420" y2="280"/><line x1="580" y1="280" x2="420" y2="280"/><line x1="310" y1="540" x2="530" y2="540"/><line x1="580" y1="280" x2="580" y2="500"/></g><g fill="none" stroke="#C9A96E" stroke-width="14" stroke-linecap="square"><line x1="460" y1="380" x2="760" y2="380"/><line x1="760" y1="380" x2="460" y2="700"/><line x1="460" y1="700" x2="760" y2="700"/></g><text x="512" y="840" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="500" font-size="42" fill="#C9A96E" letter-spacing="20" opacity="0.7">BARBERSHOP</text></svg>
+        </div>
+        <div class="size-label">120px</div>
+      </div>
+      <div>
+        <div class="size-preview" style="width:60px;height:60px;">
+          <svg width="60" height="60" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#111111"/><path d="M 160,80 L 864,80 L 944,160 L 944,864 L 864,944 L 160,944 L 80,864 L 80,160 Z" fill="none" stroke="#C9A96E" stroke-width="8"/><g fill="none" stroke="#C9A96E" stroke-width="20" stroke-linecap="square"><line x1="260" y1="680" x2="420" y2="280"/><line x1="560" y1="280" x2="420" y2="280"/><line x1="310" y1="520" x2="510" y2="520"/><line x1="560" y1="280" x2="560" y2="480"/></g><g fill="none" stroke="#C9A96E" stroke-width="20" stroke-linecap="square"><line x1="460" y1="380" x2="740" y2="380"/><line x1="740" y1="380" x2="460" y2="680"/><line x1="460" y1="680" x2="740" y2="680"/></g></svg>
+        </div>
+        <div class="size-label">60px</div>
+      </div>
+      <div>
+        <div class="size-preview" style="width:40px;height:40px;">
+          <svg width="40" height="40" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#111111"/><path d="M 160,80 L 864,80 L 944,160 L 944,864 L 864,944 L 160,944 L 80,864 L 80,160 Z" fill="none" stroke="#C9A96E" stroke-width="14"/><g fill="none" stroke="#C9A96E" stroke-width="28" stroke-linecap="square"><line x1="260" y1="680" x2="420" y2="280"/><line x1="560" y1="280" x2="420" y2="280"/><line x1="310" y1="520" x2="510" y2="520"/><line x1="560" y1="280" x2="560" y2="480"/></g><g fill="none" stroke="#C9A96E" stroke-width="28" stroke-linecap="square"><line x1="460" y1="380" x2="740" y2="380"/><line x1="740" y1="380" x2="460" y2="680"/><line x1="460" y1="680" x2="740" y2="680"/></g></svg>
+        </div>
+        <div class="size-label">40px</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="text-align:center; margin-top:60px; padding: 30px; border-top: 1px solid #2A2A2A;">
+  <p style="color:#71717A; font-size:13px; font-family:'JetBrains Mono', monospace;">
+    App Store Requirements: 1024 x 1024 px | PNG | No transparency | No rounded corners (Apple adds automatically)
+  </p>
+</div>
+
+</body>
+</html>

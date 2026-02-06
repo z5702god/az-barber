@@ -1,23 +1,27 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
 import { Service } from '../types';
 
-// 根導航參數
+// Root navigation params
 export type RootStackParamList = {
   Auth: undefined;
   Main: NavigatorScreenParams<MainTabParamList>;
-  BarberMain: NavigatorScreenParams<BarberTabParamList>; // 新增
+  BarberMain: NavigatorScreenParams<BarberTabParamList>;
   BookingFlow: NavigatorScreenParams<BookingStackParamList>;
+  BookingDetail: { bookingId: string };
+  Notifications: undefined;
+  PrivacyPolicy: undefined;
+  Terms: undefined;
 };
 
-// 顧客 Tab 導航參數
+// Customer tab navigation params
 export type MainTabParamList = {
   Home: undefined;
-  Booking: undefined;
+  AIChat: undefined;
   MyBookings: undefined;
   Profile: undefined;
 };
 
-// 理髮師 Tab 導航參數 (新增)
+// Barber tab navigation params
 export type BarberTabParamList = {
   BarberHome: undefined;
   BookingCalendar: undefined;
@@ -26,7 +30,7 @@ export type BarberTabParamList = {
   BarberProfile: undefined;
 };
 
-// 預約流程導航參數
+// Booking flow navigation params
 export type BookingStackParamList = {
   SelectServices: { barberId: string };
   SelectDateTime: {
@@ -47,19 +51,22 @@ export type BookingStackParamList = {
   BookingSuccess: { bookingId: string };
 };
 
-// 個人資料 Stack 導航參數
+// Profile stack navigation params (Customer)
 export type ProfileStackParamList = {
   ProfileMain: undefined;
   EditProfile: undefined;
+  NotificationSettings: undefined;
+  AboutUs: undefined;
+  PrivacyPolicy: undefined;
+  Terms: undefined;
 };
 
-// 管理端導航參數（保留給未來店主使用）
-export type ManageStackParamList = {
-  Dashboard: undefined;
-  MySchedule: undefined;
-  Availability: undefined;
-  StaffManagement: undefined;
-  ServiceManagement: undefined;
-  Reports: undefined;
-  CustomerManagement: undefined;
+// Barber profile stack navigation params
+export type BarberProfileStackParamList = {
+  BarberProfileMain: undefined;
+  EditProfile: undefined;
+  NotificationSettings: undefined;
+  AboutUs: undefined;
+  PrivacyPolicy: undefined;
+  Terms: undefined;
 };
