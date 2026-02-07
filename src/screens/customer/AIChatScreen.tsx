@@ -109,43 +109,33 @@ export const AIChatScreen: React.FC = () => {
   const flatListRef = useRef<FlatList>(null);
   const insets = useSafeAreaInsets();
 
-  // Use first barber name for quick action, fallback to generic
-  const firstBarberName = barbers.length > 0 ? barbers[0].display_name : '設計師';
+  // Use first barber name for quick action
+  const firstBarberName = barbers.length > 0 ? barbers[0].display_name : null;
 
   // Inverted FlatList: data is reversed so newest message is first item
   const invertedMessages = useMemo(() => [...messages].reverse(), [messages]);
 
-  // Animated bottom padding — drives layout without React re-renders
-  // Tab bar handles bottom safe area when keyboard is down (paddingBottom = 0)
-  // When keyboard is up, tab bar hides → need full keyboard height as padding
+  // iOS only: manual keyboard padding (iOS has no adjustResize)
+  // Android: adjustResize handles it automatically (edgeToEdgeEnabled must be false)
   const bottomPadding = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    if (Platform.OS !== 'ios') return;
 
-    const showSub = Keyboard.addListener(showEvent, (e) => {
-      if (Platform.OS === 'ios') {
-        Animated.timing(bottomPadding, {
-          toValue: e.endCoordinates.height,
-          duration: e.duration || 250,
-          useNativeDriver: false,
-        }).start();
-      } else {
-        bottomPadding.setValue(e.endCoordinates.height);
-      }
+    const showSub = Keyboard.addListener('keyboardWillShow', (e) => {
+      Animated.timing(bottomPadding, {
+        toValue: e.endCoordinates.height,
+        duration: e.duration || 250,
+        useNativeDriver: false,
+      }).start();
     });
 
-    const hideSub = Keyboard.addListener(hideEvent, (e) => {
-      if (Platform.OS === 'ios') {
-        Animated.timing(bottomPadding, {
-          toValue: 0,
-          duration: e.duration || 250,
-          useNativeDriver: false,
-        }).start();
-      } else {
-        bottomPadding.setValue(0);
-      }
+    const hideSub = Keyboard.addListener('keyboardWillHide', (e) => {
+      Animated.timing(bottomPadding, {
+        toValue: 0,
+        duration: e.duration || 250,
+        useNativeDriver: false,
+      }).start();
     });
 
     return () => {
@@ -195,7 +185,7 @@ export const AIChatScreen: React.FC = () => {
       </View>
 
       {/* Chat area — Animated.View for smooth keyboard-driven padding */}
-      <Animated.View style={[styles.chatContainer, { paddingBottom: bottomPadding }]}>
+      <Animated.View style={[styles.chatContainer, Platform.OS === 'ios' && { paddingBottom: bottomPadding }]}>
         {/* Messages */}
         <FlatList
           ref={flatListRef}
@@ -207,7 +197,7 @@ export const AIChatScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
           keyboardDismissMode="interactive"
           ListHeaderComponent={
-            messages.length === 1 ? (
+            messages.length === 1 && firstBarberName ? (
               <View style={styles.initialSpacer}>
                 <View style={styles.quickActions}>
                   {renderQuickAction(`${firstBarberName} 明天有空嗎？`)}

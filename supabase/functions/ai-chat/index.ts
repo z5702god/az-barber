@@ -63,27 +63,43 @@ const tools = [
   },
 ]
 
-// Generate system prompt with current date
+// Generate system prompt with current date (Asia/Taipei timezone)
 function getSystemPrompt(): string {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = now.getMonth() + 1
-  const day = now.getDate()
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
   const weekdays = ['日', '一', '二', '三', '四', '五', '六']
-  const weekday = weekdays[now.getDay()]
-  const todayStr = `${year}/${month}/${day}（週${weekday}）`
+
+  const formatDate = (d: Date) => {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }
+
+  const todayStr = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}（週${weekdays[now.getDay()]}）`
+
+  // Calculate upcoming dates for each day of the week
+  const upcoming: string[] = []
+  for (let i = 0; i <= 7; i++) {
+    const d = new Date(now)
+    d.setDate(now.getDate() + i)
+    const label = i === 0 ? '今天' : i === 1 ? '明天' : i === 2 ? '後天' : `${i}天後`
+    upcoming.push(`${label} = ${formatDate(d)}（週${weekdays[d.getDay()]}）`)
+  }
 
   return `你是 AZ Barber 理髮店的預約小幫手，叫小安。像朋友聊天一樣跟客人說話，不要太正式。
 
 今天是 ${todayStr}。
+
+近期日期對照：
+${upcoming.join('\n')}
 
 你可以幫客人：
 - 看設計師（AZ、Wendy）哪天有空
 - 介紹服務跟價格
 - 幫忙預約
 
-營業時間：週二到週六 12:00-20:00（週日週一休息）
 預約時段：整點預約（10:00、11:00...這樣）
+每位設計師的營業時間可能不同，一律用 get_barber_availability 查詢。
 
 說話風格：
 - 用口語，像朋友對話
@@ -100,8 +116,10 @@ function getSystemPrompt(): string {
 4. 確認時段（先用 get_barber_availability 查空檔再給客人選）
 5. 最後確認所有細節，客人同意後才建立預約
 
-重要：絕對不能跳過詢問設計師這一步！我們有 AZ 和 Wendy 兩位設計師，客人必須選一位。
-當客人說「明天」時，要用正確的日期（${year}-${String(month).padStart(2, '0')}-${String(day + 1).padStart(2, '0')}）。`
+重要：
+- 絕對不能跳過詢問設計師這一步！我們有 AZ 和 Wendy 兩位設計師，客人必須選一位。
+- 客人說「星期X」時，查上面的日期對照表找到正確日期，再用 get_barber_availability 查詢。
+- 不要假設哪天休息，一律查詢 get_barber_availability 確認。`
 }
 
 // Read-only tool names that don't need user authentication
@@ -154,12 +172,7 @@ async function getBarberAvailability(supabase: any, barberName: string, date: st
   const dateObj = new Date(date)
   const dayOfWeek = dateObj.getDay()
 
-  // Check if Sunday (closed)
-  if (dayOfWeek === 0) {
-    return { available: false, message: '週日休息，請選擇其他日期' }
-  }
-
-  // Get availability for this day
+  // Get availability for this day from database (no hardcoded closed days)
   const { data: availability } = await supabase
     .from('availability')
     .select('*')
