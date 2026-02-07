@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import * as SplashScreen from 'expo-splash-screen';
 
 import { useAuth } from '../hooks/useAuth';
 import { RootStackParamList, MainTabParamList } from './types';
@@ -106,6 +107,16 @@ const CustomerTabNavigator: React.FC = () => {
 export const AppNavigator: React.FC = () => {
   const { session, user, loading } = useAuth();
 
+  // Hide splash screen once auth state is resolved
+  // Uses onReady callback for NavigationContainer to ensure
+  // the first meaningful frame is fully rendered before hiding
+  const onNavigationReady = useCallback(() => {
+    if (!loading) {
+      SplashScreen.hideAsync();
+    }
+  }, [loading]);
+
+  // Return null while loading — native splash screen stays visible
   if (loading) {
     return null;
   }
@@ -132,7 +143,7 @@ export const AppNavigator: React.FC = () => {
   };
 
   return (
-    <NavigationContainer theme={navigationTheme}>
+    <NavigationContainer theme={navigationTheme} onReady={onNavigationReady}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
           <>

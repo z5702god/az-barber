@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { PaperProvider, MD3DarkTheme } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import {
   JetBrainsMono_400Regular,
@@ -41,6 +41,10 @@ import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { paperTheme, colors } from './src/theme';
 
+// Keep native splash screen visible until we explicitly hide it
+// This prevents the flash between native splash → JS loading screen
+SplashScreen.preventAutoHideAsync();
+
 export default function App() {
   const [fontsLoaded] = useFonts({
     // JetBrains Mono - Monospace font
@@ -70,12 +74,9 @@ export default function App() {
     'NotoSerifTC-Bold': NotoSerifTC_700Bold,
   });
 
+  // Return null while fonts load — native splash screen stays visible
   if (!fontsLoaded) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
+    return null;
   }
 
   // Custom dark theme for React Native Paper
@@ -127,12 +128,3 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
-});

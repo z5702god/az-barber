@@ -29,7 +29,8 @@
         "backgroundColor": "#111111"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.azbarber.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -42,6 +43,14 @@
         "@react-native-google-signin/google-signin",
         {
           "iosUrlScheme": "com.googleusercontent.apps.920374542314-3j883codjk3ujvdpk34t3mji3a0sbivn"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "backgroundColor": "#111111"
         }
       ]
     ],
