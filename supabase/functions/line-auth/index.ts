@@ -167,7 +167,13 @@ serve(async (req) => {
         const token = magicLinkUrl.searchParams.get('token')
 
         // Redirect to app with token and state for CSRF validation
-        return Response.redirect(`az-barber-app://auth/callback?token=${token}&type=magiclink&state=${state}`)
+        // Use encodeURIComponent to prevent special chars in token from breaking URL parsing
+        const redirectParams = new URLSearchParams({
+          token: token || '',
+          type: 'magiclink',
+          state: state || '',
+        })
+        return Response.redirect(`az-barber-app://auth/callback?${redirectParams.toString()}`)
       }
 
       // For POST request (from app)

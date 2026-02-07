@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  Keyboard,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -110,14 +111,24 @@ export const AIChatScreen: React.FC = () => {
   // Use first barber name for quick action, fallback to generic
   const firstBarberName = barbers.length > 0 ? barbers[0].display_name : '設計師';
 
+  const scrollToBottom = useCallback(() => {
+    setTimeout(() => {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  }, []);
+
   // Auto scroll to bottom when new messages arrive
   useEffect(() => {
     if (messages.length > 0) {
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+      scrollToBottom();
     }
-  }, [messages]);
+  }, [messages, scrollToBottom]);
+
+  // Scroll to bottom when keyboard appears
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', scrollToBottom);
+    return () => showSub.remove();
+  }, [scrollToBottom]);
 
   const handleSend = () => {
     if (inputText.trim() && !isLoading) {
@@ -162,7 +173,7 @@ export const AIChatScreen: React.FC = () => {
       <KeyboardAvoidingView
         style={styles.chatContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 44 : 0}
       >
         {/* Messages */}
         <FlatList
