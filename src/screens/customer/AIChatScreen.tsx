@@ -116,42 +116,35 @@ export const AIChatScreen: React.FC = () => {
   const invertedMessages = useMemo(() => [...messages].reverse(), [messages]);
 
   // Animated bottom padding — drives layout without React re-renders
-  // This is key for smooth keyboard animation: Animated.Value updates
-  // the native view directly without triggering React reconciliation
+  // Tab bar handles bottom safe area when keyboard is down (paddingBottom = 0)
+  // When keyboard is up, tab bar hides → need full keyboard height as padding
   const bottomPadding = useRef(new Animated.Value(0)).current;
 
-  // Sync initial safe area inset
-  useEffect(() => {
-    bottomPadding.setValue(insets.bottom);
-  }, [insets.bottom]);
-
-  // Keyboard tracking with Animated.timing — no setState, no re-renders
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
 
     const showSub = Keyboard.addListener(showEvent, (e) => {
-      const toValue = e.endCoordinates.height - insets.bottom;
       if (Platform.OS === 'ios') {
         Animated.timing(bottomPadding, {
-          toValue,
+          toValue: e.endCoordinates.height,
           duration: e.duration || 250,
           useNativeDriver: false,
         }).start();
       } else {
-        bottomPadding.setValue(toValue);
+        bottomPadding.setValue(e.endCoordinates.height);
       }
     });
 
     const hideSub = Keyboard.addListener(hideEvent, (e) => {
       if (Platform.OS === 'ios') {
         Animated.timing(bottomPadding, {
-          toValue: insets.bottom,
+          toValue: 0,
           duration: e.duration || 250,
           useNativeDriver: false,
         }).start();
       } else {
-        bottomPadding.setValue(insets.bottom);
+        bottomPadding.setValue(0);
       }
     });
 
@@ -159,7 +152,7 @@ export const AIChatScreen: React.FC = () => {
       showSub.remove();
       hideSub.remove();
     };
-  }, [insets.bottom]);
+  }, []);
 
   const handleSend = () => {
     if (inputText.trim() && !isLoading) {
@@ -317,6 +310,7 @@ const styles = StyleSheet.create({
   },
   messagesList: {
     flexGrow: 1,
+    justifyContent: 'flex-end',
     padding: spacing.md,
   },
   initialSpacer: {
