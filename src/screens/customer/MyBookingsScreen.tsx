@@ -130,7 +130,7 @@ export const MyBookingsScreen: React.FC = () => {
         <View style={styles.bookingInfo}>
           <Text style={styles.serviceName}>{serviceNames}</Text>
           <Text style={styles.bookingDetails}>
-            {booking.start_time} • {booking.barber?.display_name || '理髮師'}
+            {booking.start_time?.slice(0, 5)} • {booking.barber?.display_name || '理髮師'}
           </Text>
         </View>
 

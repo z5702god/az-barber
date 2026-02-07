@@ -64,7 +64,7 @@ export const AvailabilityScreen: React.FC<Props> = () => {
   const getDaySchedule = (dayOfWeek: number) => {
     const schedule = availability.find(a => a.day_of_week === dayOfWeek);
     if (schedule) {
-      return `${schedule.start_time} - ${schedule.end_time}`;
+      return `${schedule.start_time?.slice(0, 5)} - ${schedule.end_time?.slice(0, 5)}`;
     }
     return '公休';
   };

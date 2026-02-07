@@ -104,7 +104,7 @@ export const BookingSuccessScreen: React.FC<Props> = ({ navigation, route }) => 
             <View style={styles.cardRow}>
               <Ionicons name="calendar-outline" size={20} color={colors.primary} />
               <Text style={styles.cardText}>
-                {formatDate(booking.booking_date)} {booking.start_time}
+                {formatDate(booking.booking_date)} {booking.start_time?.slice(0, 5)}
               </Text>
             </View>
             <View style={styles.cardDivider} />

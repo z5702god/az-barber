@@ -237,7 +237,7 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           <View style={styles.timeRow}>
             <Ionicons name="time-outline" size={18} color={colors.mutedForeground} />
             <Text style={styles.timeText}>
-              {booking.start_time} - {booking.end_time}
+              {booking.start_time?.slice(0, 5)} - {booking.end_time?.slice(0, 5)}
             </Text>
             <Text style={styles.durationText}>({booking.total_duration} 分鐘)</Text>
           </View>
