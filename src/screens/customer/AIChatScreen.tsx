@@ -5,12 +5,13 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
   Platform,
   StatusBar,
+  Keyboard,
+  LayoutAnimation,
 } from 'react-native';
 import { Text } from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAIChat } from '../../hooks/useAIChat';
 import { useBarbers } from '../../hooks/useBarbers';
@@ -106,13 +107,52 @@ export const AIChatScreen: React.FC = () => {
   const { barbers } = useBarbers();
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef<FlatList>(null);
+  const insets = useSafeAreaInsets();
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   // Use first barber name for quick action, fallback to generic
   const firstBarberName = barbers.length > 0 ? barbers[0].display_name : '設計師';
 
-  // Inverted FlatList: data is reversed so newest message is first item,
-  // FlatList renders from bottom up - keyboard handling is automatic
+  // Inverted FlatList: data is reversed so newest message is first item
   const invertedMessages = useMemo(() => [...messages].reverse(), [messages]);
+
+  // Native keyboard tracking with LayoutAnimation
+  // Uses iOS UIViewAnimationCurveKeyboard (curve 7) for pixel-perfect sync
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      if (Platform.OS === 'ios') {
+        LayoutAnimation.configureNext({
+          duration: e.duration,
+          update: { type: LayoutAnimation.Types.keyboard },
+        });
+      }
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+
+    const hideSub = Keyboard.addListener(hideEvent, (e) => {
+      if (Platform.OS === 'ios') {
+        LayoutAnimation.configureNext({
+          duration: e.duration || 250,
+          update: { type: LayoutAnimation.Types.keyboard },
+        });
+      }
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  // Bottom padding: when keyboard is up, use keyboard height minus safe area (keyboard covers it)
+  // When keyboard is down, use safe area bottom for home indicator
+  const bottomPadding = keyboardHeight > 0
+    ? keyboardHeight - insets.bottom
+    : insets.bottom;
 
   const handleSend = () => {
     if (inputText.trim() && !isLoading) {
@@ -154,11 +194,8 @@ export const AIChatScreen: React.FC = () => {
         </Text>
       </View>
 
-      <KeyboardAvoidingView
-        style={styles.chatContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 44 : 0}
-      >
+      {/* Chat area - no KeyboardAvoidingView, uses native LayoutAnimation */}
+      <View style={[styles.chatContainer, { paddingBottom: bottomPadding }]}>
         {/* Messages */}
         <FlatList
           ref={flatListRef}
@@ -213,7 +250,7 @@ export const AIChatScreen: React.FC = () => {
             />
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -271,7 +308,6 @@ const styles = StyleSheet.create({
   },
   messagesList: {
     padding: spacing.md,
-    paddingBottom: spacing.xl,
   },
   messageContainer: {
     marginBottom: spacing.md,
@@ -380,7 +416,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     padding: spacing.md,
-    paddingBottom: spacing.lg,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     backgroundColor: colors.card,
