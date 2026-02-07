@@ -111,10 +111,10 @@ export const AIChatScreen: React.FC = () => {
   // Use first barber name for quick action, fallback to generic
   const firstBarberName = barbers.length > 0 ? barbers[0].display_name : '設計師';
 
-  const scrollToBottom = useCallback(() => {
+  const scrollToBottom = useCallback((delay = 50) => {
     setTimeout(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+    }, delay);
   }, []);
 
   // Auto scroll to bottom when new messages arrive
@@ -125,10 +125,18 @@ export const AIChatScreen: React.FC = () => {
   }, [messages, scrollToBottom]);
 
   // Scroll to bottom when keyboard appears
+  // iOS: keyboardWillShow fires before animation starts, so scroll syncs with keyboard
+  // Android: only has keyboardDidShow
   useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardDidShow', scrollToBottom);
+    const event = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const showSub = Keyboard.addListener(event, () => scrollToBottom(Platform.OS === 'ios' ? 0 : 100));
     return () => showSub.remove();
   }, [scrollToBottom]);
+
+  // Also scroll when content size changes (e.g. AI response streams in)
+  const handleContentSizeChange = useCallback(() => {
+    flatListRef.current?.scrollToEnd({ animated: true });
+  }, []);
 
   const handleSend = () => {
     if (inputText.trim() && !isLoading) {
@@ -183,6 +191,7 @@ export const AIChatScreen: React.FC = () => {
           renderItem={({ item }) => <MessageBubble message={item} />}
           contentContainerStyle={styles.messagesList}
           showsVerticalScrollIndicator={false}
+          onContentSizeChange={handleContentSizeChange}
           ListFooterComponent={
             messages.length === 1 ? (
               <View style={styles.quickActions}>
