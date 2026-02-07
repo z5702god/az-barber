@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
-  Keyboard,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -111,32 +110,9 @@ export const AIChatScreen: React.FC = () => {
   // Use first barber name for quick action, fallback to generic
   const firstBarberName = barbers.length > 0 ? barbers[0].display_name : '設計師';
 
-  const scrollToBottom = useCallback((delay = 50) => {
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, delay);
-  }, []);
-
-  // Auto scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottom();
-    }
-  }, [messages, scrollToBottom]);
-
-  // Scroll to bottom when keyboard appears
-  // iOS: keyboardWillShow fires before animation starts, so scroll syncs with keyboard
-  // Android: only has keyboardDidShow
-  useEffect(() => {
-    const event = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const showSub = Keyboard.addListener(event, () => scrollToBottom(Platform.OS === 'ios' ? 0 : 100));
-    return () => showSub.remove();
-  }, [scrollToBottom]);
-
-  // Also scroll when content size changes (e.g. AI response streams in)
-  const handleContentSizeChange = useCallback(() => {
-    flatListRef.current?.scrollToEnd({ animated: true });
-  }, []);
+  // Inverted FlatList: data is reversed so newest message is first item,
+  // FlatList renders from bottom up - keyboard handling is automatic
+  const invertedMessages = useMemo(() => [...messages].reverse(), [messages]);
 
   const handleSend = () => {
     if (inputText.trim() && !isLoading) {
@@ -172,7 +148,7 @@ export const AIChatScreen: React.FC = () => {
 
       {/* AI Disclosure */}
       <View style={styles.disclosureBanner}>
-        <Ionicons name="information-circle-outline" size={14} color={colors.mutedForeground} style={{ marginRight: 4 }} />
+        <Ionicons name="information-circle-outline" size={14} color={colors.mutedForeground} />
         <Text style={styles.disclosureText}>
           此為 AI 助理（由 OpenAI 技術驅動），非真人客服。回覆僅供參考。
         </Text>
@@ -186,13 +162,14 @@ export const AIChatScreen: React.FC = () => {
         {/* Messages */}
         <FlatList
           ref={flatListRef}
-          data={messages}
+          data={invertedMessages}
+          inverted
           keyExtractor={item => item.id}
           renderItem={({ item }) => <MessageBubble message={item} />}
           contentContainerStyle={styles.messagesList}
           showsVerticalScrollIndicator={false}
-          onContentSizeChange={handleContentSizeChange}
-          ListFooterComponent={
+          keyboardDismissMode="interactive"
+          ListHeaderComponent={
             messages.length === 1 ? (
               <View style={styles.quickActions}>
                 {renderQuickAction(`${firstBarberName} 明天有空嗎？`)}
@@ -276,18 +253,18 @@ const styles = StyleSheet.create({
   disclosureBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
     backgroundColor: 'rgba(201, 169, 110, 0.08)',
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    gap: spacing.xs,
   },
   disclosureText: {
+    flex: 1,
     fontSize: typography.fontSize.xs,
     fontFamily: typography.fontFamily.chinese,
     color: colors.mutedForeground,
-    textAlign: 'center',
   },
   chatContainer: {
     flex: 1,
