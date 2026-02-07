@@ -8,7 +8,7 @@ import {
   Platform,
   StatusBar,
   Keyboard,
-  LayoutAnimation,
+  Animated,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -108,7 +108,6 @@ export const AIChatScreen: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef<FlatList>(null);
   const insets = useSafeAreaInsets();
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   // Use first barber name for quick action, fallback to generic
   const firstBarberName = barbers.length > 0 ? barbers[0].display_name : '設計師';
@@ -116,43 +115,51 @@ export const AIChatScreen: React.FC = () => {
   // Inverted FlatList: data is reversed so newest message is first item
   const invertedMessages = useMemo(() => [...messages].reverse(), [messages]);
 
-  // Native keyboard tracking with LayoutAnimation
-  // Uses iOS UIViewAnimationCurveKeyboard (curve 7) for pixel-perfect sync
+  // Animated bottom padding — drives layout without React re-renders
+  // This is key for smooth keyboard animation: Animated.Value updates
+  // the native view directly without triggering React reconciliation
+  const bottomPadding = useRef(new Animated.Value(0)).current;
+
+  // Sync initial safe area inset
+  useEffect(() => {
+    bottomPadding.setValue(insets.bottom);
+  }, [insets.bottom]);
+
+  // Keyboard tracking with Animated.timing — no setState, no re-renders
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
 
     const showSub = Keyboard.addListener(showEvent, (e) => {
+      const toValue = e.endCoordinates.height - insets.bottom;
       if (Platform.OS === 'ios') {
-        LayoutAnimation.configureNext({
-          duration: e.duration,
-          update: { type: LayoutAnimation.Types.keyboard },
-        });
+        Animated.timing(bottomPadding, {
+          toValue,
+          duration: e.duration || 250,
+          useNativeDriver: false,
+        }).start();
+      } else {
+        bottomPadding.setValue(toValue);
       }
-      setKeyboardHeight(e.endCoordinates.height);
     });
 
     const hideSub = Keyboard.addListener(hideEvent, (e) => {
       if (Platform.OS === 'ios') {
-        LayoutAnimation.configureNext({
+        Animated.timing(bottomPadding, {
+          toValue: insets.bottom,
           duration: e.duration || 250,
-          update: { type: LayoutAnimation.Types.keyboard },
-        });
+          useNativeDriver: false,
+        }).start();
+      } else {
+        bottomPadding.setValue(insets.bottom);
       }
-      setKeyboardHeight(0);
     });
 
     return () => {
       showSub.remove();
       hideSub.remove();
     };
-  }, []);
-
-  // Bottom padding: when keyboard is up, use keyboard height minus safe area (keyboard covers it)
-  // When keyboard is down, use safe area bottom for home indicator
-  const bottomPadding = keyboardHeight > 0
-    ? keyboardHeight - insets.bottom
-    : insets.bottom;
+  }, [insets.bottom]);
 
   const handleSend = () => {
     if (inputText.trim() && !isLoading) {
@@ -194,8 +201,8 @@ export const AIChatScreen: React.FC = () => {
         </Text>
       </View>
 
-      {/* Chat area - no KeyboardAvoidingView, uses native LayoutAnimation */}
-      <View style={[styles.chatContainer, { paddingBottom: bottomPadding }]}>
+      {/* Chat area — Animated.View for smooth keyboard-driven padding */}
+      <Animated.View style={[styles.chatContainer, { paddingBottom: bottomPadding }]}>
         {/* Messages */}
         <FlatList
           ref={flatListRef}
@@ -208,10 +215,12 @@ export const AIChatScreen: React.FC = () => {
           keyboardDismissMode="interactive"
           ListHeaderComponent={
             messages.length === 1 ? (
-              <View style={styles.quickActions}>
-                {renderQuickAction(`${firstBarberName} 明天有空嗎？`)}
-                {renderQuickAction('有哪些服務？')}
-                {renderQuickAction('洗剪多少錢？')}
+              <View style={styles.initialSpacer}>
+                <View style={styles.quickActions}>
+                  {renderQuickAction(`${firstBarberName} 明天有空嗎？`)}
+                  {renderQuickAction('有哪些服務？')}
+                  {renderQuickAction('洗剪多少錢？')}
+                </View>
               </View>
             ) : null
           }
@@ -250,7 +259,7 @@ export const AIChatScreen: React.FC = () => {
             />
           </TouchableOpacity>
         </View>
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 };
@@ -307,7 +316,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   messagesList: {
+    flexGrow: 1,
     padding: spacing.md,
+  },
+  initialSpacer: {
+    flex: 1,
   },
   messageContainer: {
     marginBottom: spacing.md,
