@@ -85,6 +85,8 @@ export const HomeScreen: React.FC = () => {
         style={styles.scrollView}
         contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + spacing.md }]}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        overScrollMode="never"
       >
         {/* Header */}
         <View style={styles.header}>

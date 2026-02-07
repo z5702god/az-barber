@@ -10,7 +10,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import { NativeStackScreenProps, NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -37,7 +36,7 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const { stats, loading: statsLoading } = useBarberTodayStats(barberId);
   const { bookings, loading: bookingsLoading, refetch } = useBarberBookings(barberId, today);
-  const { updateStatus, cancelBooking, updating } = useUpdateBookingStatus();
+  const { cancelBooking, updating } = useUpdateBookingStatus();
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -88,21 +87,6 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
     setRefreshing(false);
   }, [refetch]);
 
-  const handleMarkCompleted = (booking: Booking) => {
-    Alert.alert('確認完成', '確定要將此預約標記為已完成嗎？', [
-      { text: '取消', style: 'cancel' },
-      {
-        text: '確定',
-        onPress: async () => {
-          const result = await updateStatus(booking.id, 'completed');
-          if (result.success) {
-            refetch();
-          }
-        },
-      },
-    ]);
-  };
-
   const upcomingBookings = bookings
     .filter(b => b.status === 'confirmed')
     .slice(0, 5);
@@ -115,6 +99,8 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        overScrollMode="never"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -185,7 +171,7 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
         ) : (
           upcomingBookings.map((booking) => {
             // 優先顯示 name，若無則用 email 或 phone
-            const customerDisplayName = booking.customer?.name
+            const customerDisplayName = booking.customer?.name?.trim()
               || booking.customer?.email?.split('@')[0]
               || booking.customer?.phone
               || '顧客';
@@ -219,15 +205,6 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
 
               <View style={styles.actionRow}>
                 <TouchableOpacity
-                  style={styles.completeButton}
-                  onPress={() => handleMarkCompleted(booking)}
-                  disabled={updating}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="checkmark" size={18} color={colors.primary} />
-                  <Text style={styles.completeButtonText}>完成</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
                   style={styles.cancelButton}
                   onPress={() => handleOpenCancelModal(booking)}
                   disabled={updating}
@@ -259,7 +236,7 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
             {selectedBooking && (
               <View style={styles.modalBookingInfo}>
                 <Text style={styles.modalBookingText}>
-                  顧客：{selectedBooking.customer?.name
+                  顧客：{selectedBooking.customer?.name?.trim()
                     || selectedBooking.customer?.email?.split('@')[0]
                     || selectedBooking.customer?.phone
                     || '顧客'}
@@ -511,23 +488,6 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     fontFamily: typography.fontFamily.chineseMedium,
     color: colors.destructive,
-  },
-  completeButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs,
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: colors.primary,
-    paddingVertical: spacing.sm,
-    borderRadius: 0,
-  },
-  completeButtonText: {
-    fontSize: typography.fontSize.sm,
-    fontFamily: typography.fontFamily.chineseMedium,
-    color: colors.primary,
   },
   // Modal styles
   modalOverlay: {

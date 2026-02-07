@@ -195,6 +195,8 @@ export const MyBookingsScreen: React.FC = () => {
           />
         }
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        overScrollMode="never"
       >
         {displayedBookings.length === 0 ? (
           <View style={styles.emptyContainer}>

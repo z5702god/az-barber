@@ -1,11 +1,10 @@
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
+import * as SecureStore from 'expo-secure-store';
 import { supabase, SUPABASE_URL } from './supabase';
 
 const LINE_AUTH_FUNCTION = `${SUPABASE_URL}/functions/v1/line-auth`;
-
-// Module-level state for CSRF validation
-let pendingCsrfState: string | null = null;
+const CSRF_STATE_KEY = 'line_csrf_state';
 
 export interface LineAuthResult {
   success: boolean;
@@ -19,7 +18,8 @@ export async function signInWithLine(): Promise<LineAuthResult> {
   try {
     // Generate state for CSRF protection
     const state = Math.random().toString(36).substring(7);
-    pendingCsrfState = state;
+    // Persist state in SecureStore so it survives app backgrounding on real devices
+    await SecureStore.setItemAsync(CSRF_STATE_KEY, state);
 
     // LINE OAuth URL with Edge Function callback
     const params = new URLSearchParams({
@@ -39,7 +39,7 @@ export async function signInWithLine(): Promise<LineAuthResult> {
     );
 
     if (result.type !== 'success') {
-      pendingCsrfState = null;
+      await SecureStore.deleteItemAsync(CSRF_STATE_KEY);
       return {
         success: false,
         error: result.type === 'cancel' ? '使用者取消登入' : '登入失敗',
@@ -50,23 +50,24 @@ export async function signInWithLine(): Promise<LineAuthResult> {
     const url = Linking.parse(result.url);
 
     if (url.queryParams?.error) {
-      pendingCsrfState = null;
+      await SecureStore.deleteItemAsync(CSRF_STATE_KEY);
       return {
         success: false,
         error: String(url.queryParams.error),
       };
     }
 
-    // Validate CSRF state
+    // Validate CSRF state (read from SecureStore to survive app backgrounding)
+    const savedState = await SecureStore.getItemAsync(CSRF_STATE_KEY);
     const returnedState = url.queryParams?.state as string;
-    if (returnedState !== pendingCsrfState) {
-      pendingCsrfState = null;
+    await SecureStore.deleteItemAsync(CSRF_STATE_KEY);
+
+    if (returnedState !== savedState) {
       return {
         success: false,
         error: '安全驗證失敗，請重試',
       };
     }
-    pendingCsrfState = null;
 
     // Get token from callback
     const token = url.queryParams?.token as string;

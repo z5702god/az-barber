@@ -173,6 +173,8 @@ export const SelectServicesScreen: React.FC<Props> = ({ navigation, route }) => 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        overScrollMode="never"
       >
         {/* Instruction text */}
         <Text style={styles.instructionText}>

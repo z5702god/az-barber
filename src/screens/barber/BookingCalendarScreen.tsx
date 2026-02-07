@@ -167,7 +167,7 @@ export const BookingCalendarScreen: React.FC<Props> = () => {
         ) : (
           bookings.map((booking) => {
             // 優先顯示 name，若無則用 email 或 phone
-            const customerDisplayName = booking.customer?.name
+            const customerDisplayName = booking.customer?.name?.trim()
               || booking.customer?.email?.split('@')[0]
               || booking.customer?.phone
               || '顧客';
@@ -246,7 +246,7 @@ export const BookingCalendarScreen: React.FC<Props> = () => {
             {selectedBooking && (
               <View style={styles.modalBookingInfo}>
                 <Text style={styles.modalBookingText}>
-                  顧客：{selectedBooking.customer?.name
+                  顧客：{selectedBooking.customer?.name?.trim()
                     || selectedBooking.customer?.email?.split('@')[0]
                     || selectedBooking.customer?.phone
                     || '顧客'}

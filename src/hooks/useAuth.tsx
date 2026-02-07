@@ -105,7 +105,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const newUser: Partial<User> = {
       id: userId,
-      name: authUser.user.user_metadata?.full_name || authUser.user.email?.split('@')[0] || '新用戶',
+      name: authUser.user.user_metadata?.full_name?.trim()
+        || authUser.user.user_metadata?.name?.trim()
+        || authUser.user.email?.split('@')[0]
+        || '新用戶',
       email: authUser.user.email,
       role: 'customer' as UserRole,
       avatar_url: authUser.user.user_metadata?.avatar_url,

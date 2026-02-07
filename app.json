@@ -17,9 +17,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.azbarber.app",
       "usesAppleSignIn": true,
-      "privacyPolicyUrl": "https://azbarber.app/privacy",
+      "privacyPolicyUrl": "https://z5702god.github.io/az-barber/privacy.html",
       "infoPlist": {
-        "CFBundleDisplayName": "AZ Barber"
+        "CFBundleDisplayName": "AZ Barber",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -43,6 +44,11 @@
           "iosUrlScheme": "com.googleusercontent.apps.920374542314-3j883codjk3ujvdpk34t3mji3a0sbivn"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "42760f21-27a3-45a9-91b0-13e118a662bc"
+      }
+    }
   }
 }

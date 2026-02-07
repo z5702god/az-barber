@@ -98,7 +98,7 @@ export function useBarberStats(barberId: string, startDate: string, endDate: str
           customer_id,
           total_price,
           booking_date,
-          customer:users!bookings_customer_id_fkey(id, name)
+          customer:users!bookings_customer_id_fkey(id, name, email)
         `)
         .eq('barber_id', barberId)
         .eq('status', 'completed')
@@ -110,7 +110,9 @@ export function useBarberStats(barberId: string, startDate: string, endDate: str
         customerData.forEach((item: any) => {
           const customerId = item.customer_id;
           const existing = customerMap.get(customerId);
-          const displayName = item.customer?.name || '匿名顧客';
+          const displayName = item.customer?.name?.trim()
+            || item.customer?.email?.split('@')[0]
+            || '顧客';
           if (existing) {
             existing.visitCount += 1;
             existing.totalSpent += item.total_price || 0;
