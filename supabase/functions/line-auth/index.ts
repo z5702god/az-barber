@@ -108,50 +108,24 @@ serve(async (req) => {
         // Check if user exists with LINE ID
         const lineEmail = `line_${profile.userId}@line.local`
 
-        // Try to get existing user
-        const { data: existingUsers } = await supabase
-          .from('users')
-          .select('id, email')
-          .eq('line_user_id', profile.userId)
-          .limit(1)
-
-        let userId: string
-
-        if (existingUsers && existingUsers.length > 0) {
-          // User exists, get their ID
-          userId = existingUsers[0].id
-        } else {
-          // Create new user in auth.users
-          const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-            email: lineEmail,
-            email_confirm: true,
-            user_metadata: {
-              name: profile.displayName,
-              avatar_url: profile.pictureUrl,
-              line_user_id: profile.userId,
-              provider: 'line',
-            },
-          })
-
-          if (authError) {
-            console.error('Failed to create auth user:', authError)
-            return Response.redirect('az-barber-app://auth/callback?error=user_creation_failed')
-          }
-
-          userId = authUser.user.id
-
-          // Create user record in public.users
-          await supabase.from('users').upsert({
-            id: userId,
-            email: lineEmail,
+        // Try to create auth user (ignore error if already exists)
+        const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+          email: lineEmail,
+          email_confirm: true,
+          user_metadata: {
             name: profile.displayName,
             avatar_url: profile.pictureUrl,
             line_user_id: profile.userId,
-            role: 'customer',
-          })
+            provider: 'line',
+          },
+        })
+
+        if (authError) {
+          console.log('createUser skipped (user likely exists):', authError.message)
         }
 
-        // Generate a session token for the user
+        // Generate magic link — works whether user was just created or already existed
+        // Also returns the user object so we can get the userId
         const { data: session, error: sessionError } = await supabase.auth.admin.generateLink({
           type: 'magiclink',
           email: lineEmail,
@@ -161,6 +135,24 @@ serve(async (req) => {
           console.error('Failed to generate session:', sessionError)
           return Response.redirect('az-barber-app://auth/callback?error=session_failed')
         }
+
+        // Get userId from either createUser result or generateLink result
+        const userId = authUser?.user?.id || session.user?.id
+
+        if (!userId) {
+          console.error('Could not determine userId')
+          return Response.redirect('az-barber-app://auth/callback?error=user_not_found')
+        }
+
+        // Ensure public.users record exists with line_user_id
+        await supabase.from('users').upsert({
+          id: userId,
+          email: lineEmail,
+          name: profile.displayName,
+          avatar_url: profile.pictureUrl,
+          line_user_id: profile.userId,
+          role: 'customer',
+        })
 
         // Extract token from the magic link
         const magicLinkUrl = new URL(session.properties.action_link)

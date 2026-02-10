@@ -205,17 +205,16 @@ export const ProfileScreen: React.FC = () => {
         <Text style={styles.signOutText}>登出</Text>
       </TouchableOpacity>
 
-      {/* Delete Account Button */}
+      <Text style={styles.version}>版本 1.0.0</Text>
+
+      {/* Delete Account — low-profile text link, Apple requires it to be findable but not prominent */}
       <TouchableOpacity
-        style={styles.deleteAccountButton}
+        style={styles.deleteAccountLink}
         onPress={handleDeleteAccount}
-        activeOpacity={0.7}
+        activeOpacity={0.5}
       >
-        <Ionicons name="trash-outline" size={20} color={colors.destructive} />
         <Text style={styles.deleteAccountText}>刪除帳號</Text>
       </TouchableOpacity>
-
-      <Text style={styles.version}>版本 1.0.0</Text>
     </ScrollView>
   );
 };
@@ -332,29 +331,22 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.chineseMedium,
     color: colors.primary,
   },
-  deleteAccountButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
-    paddingVertical: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.destructive,
-    borderRadius: 0,
-  },
-  deleteAccountText: {
-    fontSize: typography.fontSize.md,
-    fontFamily: typography.fontFamily.chineseMedium,
-    color: colors.destructive,
-  },
   version: {
     textAlign: 'center',
     fontSize: typography.fontSize.xs,
     fontFamily: typography.fontFamily.body,
     color: colors.mutedForeground,
-    marginTop: spacing.lg,
+    marginTop: spacing.xl,
+  },
+  deleteAccountLink: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
     marginBottom: spacing.xxl,
+  },
+  deleteAccountText: {
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontFamily.chinese,
+    color: colors.mutedForeground,
+    textDecorationLine: 'underline',
   },
 });
