@@ -72,8 +72,8 @@ export const AvailabilityScreen: React.FC<Props> = () => {
   const handleEditDay = (dayOfWeek: number) => {
     const schedule = availability.find(a => a.day_of_week === dayOfWeek);
     if (schedule) {
-      setStartTime(schedule.start_time);
-      setEndTime(schedule.end_time);
+      setStartTime(schedule.start_time?.slice(0, 5) || '09:00');
+      setEndTime(schedule.end_time?.slice(0, 5) || '18:00');
     } else {
       setStartTime('09:00');
       setEndTime('18:00');

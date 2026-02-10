@@ -368,7 +368,7 @@ export const LoginScreen: React.FC = () => {
                   disabled={loading}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="chatbubble" size={22} color="#FFFFFF" />
+                  <Ionicons name="chatbubble" size={20} color="#FFFFFF" />
                   <Text style={styles.lineButtonText}>使用 LINE 登入</Text>
                 </TouchableOpacity>
 
@@ -378,7 +378,7 @@ export const LoginScreen: React.FC = () => {
                   disabled={loading}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="logo-google" size={22} color="#4285F4" />
+                  <Ionicons name="logo-google" size={20} color="#4285F4" />
                   <Text style={styles.googleButtonText}>使用 Google 登入</Text>
                 </TouchableOpacity>
 
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
   },
   appleButton: {
     width: '100%',
-    height: 56,
+    height: 48,
   },
   lineButton: {
     flexDirection: 'row',
@@ -477,13 +477,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#06C755',
     borderRadius: 0,
-    paddingVertical: 16,
+    height: 48,
     paddingHorizontal: spacing.lg,
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   lineButtonText: {
     color: '#FFFFFF',
-    fontSize: typography.fontSize.md,
+    fontSize: typography.fontSize.sm,
     fontFamily: typography.fontFamily.chineseSemiBold,
   },
   googleButton: {
@@ -492,13 +492,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 0,
-    paddingVertical: 16,
+    height: 48,
     paddingHorizontal: spacing.lg,
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   googleButtonText: {
     color: '#1F1F1F',
-    fontSize: typography.fontSize.md,
+    fontSize: typography.fontSize.sm,
     fontFamily: typography.fontFamily.chineseSemiBold,
   },
   emailLoginLink: {
@@ -520,7 +520,8 @@ const styles = StyleSheet.create({
   primaryButton: {
     backgroundColor: colors.primary,
     borderRadius: 0,
-    paddingVertical: 16,
+    height: 48,
+    justifyContent: 'center',
     alignItems: 'center',
     marginTop: spacing.sm,
   },
