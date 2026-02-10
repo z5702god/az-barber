@@ -1,19 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
   TouchableOpacity,
   StatusBar,
+  Animated,
 } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CommonActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import { supabase } from '../../services/supabase';
 import { Booking, Barber } from '../../types';
 import { BookingStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
+import { PressableButton } from '../../components/PressableButton';
 
 type Props = NativeStackScreenProps<BookingStackParamList, 'BookingSuccess'>;
 
@@ -24,8 +27,44 @@ export const BookingSuccessScreen: React.FC<Props> = ({ navigation, route }) => 
   const [loading, setLoading] = useState(true);
   const insets = useSafeAreaInsets();
 
+  // Animation values
+  const iconScale = useRef(new Animated.Value(0)).current;
+  const titleOpacity = useRef(new Animated.Value(0)).current;
+  const titleTranslateY = useRef(new Animated.Value(20)).current;
+  const subtitleOpacity = useRef(new Animated.Value(0)).current;
+  const subtitleTranslateY = useRef(new Animated.Value(20)).current;
+  const cardOpacity = useRef(new Animated.Value(0)).current;
+  const cardTranslateY = useRef(new Animated.Value(20)).current;
+
   useEffect(() => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     fetchBookingDetails();
+
+    // Staggered entrance animation
+    Animated.sequence([
+      // 1. Icon spring scale: 0 → 1.15 → 1
+      Animated.spring(iconScale, {
+        toValue: 1,
+        friction: 4,
+        tension: 100,
+        useNativeDriver: true,
+      }),
+      // 2. Title fade + slide
+      Animated.parallel([
+        Animated.timing(titleOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(titleTranslateY, { toValue: 0, duration: 300, useNativeDriver: true }),
+      ]),
+      // 3. Subtitle fade + slide
+      Animated.parallel([
+        Animated.timing(subtitleOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
+        Animated.timing(subtitleTranslateY, { toValue: 0, duration: 250, useNativeDriver: true }),
+      ]),
+      // 4. Card fade + slide
+      Animated.parallel([
+        Animated.timing(cardOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(cardTranslateY, { toValue: 0, duration: 300, useNativeDriver: true }),
+      ]),
+    ]).start();
   }, []);
 
   const fetchBookingDetails = async () => {
@@ -86,12 +125,16 @@ export const BookingSuccessScreen: React.FC<Props> = ({ navigation, route }) => 
 
       <View style={styles.content}>
         {/* Success Icon */}
-        <View style={styles.iconContainer}>
+        <Animated.View style={[styles.iconContainer, { transform: [{ scale: iconScale }] }]}>
           <Ionicons name="checkmark" size={48} color={colors.primaryForeground} />
-        </View>
+        </Animated.View>
 
-        <Text style={styles.title}>預約成功！</Text>
-        <Text style={styles.subtitle}>您的預約已確認</Text>
+        <Animated.View style={{ opacity: titleOpacity, transform: [{ translateY: titleTranslateY }] }}>
+          <Text style={styles.title}>預約成功！</Text>
+        </Animated.View>
+        <Animated.View style={{ opacity: subtitleOpacity, transform: [{ translateY: subtitleTranslateY }] }}>
+          <Text style={styles.subtitle}>您的預約已確認</Text>
+        </Animated.View>
 
         {/* Booking Details Card */}
         {loading && (
@@ -100,7 +143,7 @@ export const BookingSuccessScreen: React.FC<Props> = ({ navigation, route }) => 
           </View>
         )}
         {booking && (
-          <View style={styles.card}>
+          <Animated.View style={[styles.card, { opacity: cardOpacity, transform: [{ translateY: cardTranslateY }] }]}>
             <View style={styles.cardRow}>
               <Ionicons name="calendar-outline" size={20} color={colors.primary} />
               <Text style={styles.cardText}>
@@ -114,26 +157,24 @@ export const BookingSuccessScreen: React.FC<Props> = ({ navigation, route }) => 
                 設計師：{barber?.display_name || '理髮師'}
               </Text>
             </View>
-          </View>
+          </Animated.View>
         )}
 
         {/* Buttons */}
         <View style={styles.buttons}>
-          <TouchableOpacity
+          <PressableButton
             style={styles.primaryButton}
             onPress={handleViewBookings}
-            activeOpacity={0.8}
           >
             <Text style={styles.primaryButtonText}>查看我的預約</Text>
-          </TouchableOpacity>
+          </PressableButton>
 
-          <TouchableOpacity
+          <PressableButton
             style={styles.secondaryButton}
             onPress={handleGoHome}
-            activeOpacity={0.7}
           >
             <Text style={styles.secondaryButtonText}>返回首頁</Text>
-          </TouchableOpacity>
+          </PressableButton>
         </View>
       </View>
     </View>

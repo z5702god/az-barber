@@ -118,10 +118,9 @@ export const NotificationsScreen: React.FC = () => {
     // 標記為已讀（使用 Context，狀態會持久化）
     markAsRead(notification.id);
 
-    // 根據通知類型導航（巢狀導航：先到 Main Tab，再到 MyBookings）
+    // 直接導航到預約詳情頁面
     if (notification.bookingId) {
-      // @ts-ignore - 導航到巢狀的 Tab Screen
-      navigation.navigate('Main', { screen: 'MyBookings' });
+      (navigation as any).navigate('BookingDetail', { bookingId: notification.bookingId });
     }
   };
 
@@ -148,11 +147,12 @@ export const NotificationsScreen: React.FC = () => {
       {notifications.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons
-            name="notifications-off-outline"
-            size={64}
+            name="notifications-outline"
+            size={56}
             color={colors.mutedForeground}
           />
-          <Text style={styles.emptyText}>暫無通知</Text>
+          <Text style={styles.emptyTitle}>暫無通知</Text>
+          <Text style={styles.emptyText}>預約確認及變更通知會顯示在這裡</Text>
         </View>
       ) : (
         <ScrollView
@@ -322,10 +322,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: spacing.xxl,
   },
-  emptyText: {
+  emptyTitle: {
     fontSize: typography.fontSize.md,
+    fontFamily: typography.fontFamily.chineseMedium,
+    color: colors.foreground,
+    marginTop: spacing.md,
+  },
+  emptyText: {
+    fontSize: typography.fontSize.sm,
     fontFamily: typography.fontFamily.chinese,
     color: colors.mutedForeground,
-    marginTop: spacing.md,
+    marginTop: spacing.xs,
   },
 });

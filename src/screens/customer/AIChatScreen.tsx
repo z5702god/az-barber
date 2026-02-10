@@ -115,25 +115,30 @@ export const AIChatScreen: React.FC = () => {
   // Inverted FlatList: data is reversed so newest message is first item
   const invertedMessages = useMemo(() => [...messages].reverse(), [messages]);
 
-  // iOS only: manual keyboard padding (iOS has no adjustResize)
-  // Android: adjustResize handles it automatically (edgeToEdgeEnabled must be false)
+  // Manual keyboard padding for both platforms
+  // Android API 35+ enforces edge-to-edge, so adjustResize alone doesn't work
+  // iOS has no adjustResize at all
   const bottomPadding = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (Platform.OS !== 'ios') return;
+    const isIOS = Platform.OS === 'ios';
+    const showEvent = isIOS ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = isIOS ? 'keyboardWillHide' : 'keyboardDidHide';
 
-    const showSub = Keyboard.addListener('keyboardWillShow', (e) => {
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      // On Android with edge-to-edge, add bottom inset to cover navigation bar area
+      const extra = isIOS ? 0 : insets.bottom;
       Animated.timing(bottomPadding, {
-        toValue: e.endCoordinates.height,
-        duration: e.duration || 250,
+        toValue: e.endCoordinates.height + extra,
+        duration: isIOS ? (e.duration || 250) : 150,
         useNativeDriver: false,
       }).start();
     });
 
-    const hideSub = Keyboard.addListener('keyboardWillHide', (e) => {
+    const hideSub = Keyboard.addListener(hideEvent, (e) => {
       Animated.timing(bottomPadding, {
         toValue: 0,
-        duration: e.duration || 250,
+        duration: isIOS ? (e.duration || 250) : 150,
         useNativeDriver: false,
       }).start();
     });
@@ -185,7 +190,7 @@ export const AIChatScreen: React.FC = () => {
       </View>
 
       {/* Chat area — Animated.View for smooth keyboard-driven padding */}
-      <Animated.View style={[styles.chatContainer, Platform.OS === 'ios' && { paddingBottom: bottomPadding }]}>
+      <Animated.View style={[styles.chatContainer, { paddingBottom: bottomPadding }]}>
         {/* Messages */}
         <FlatList
           ref={flatListRef}

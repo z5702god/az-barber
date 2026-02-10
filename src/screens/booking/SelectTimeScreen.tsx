@@ -9,6 +9,7 @@ import {
 import { Text, ActivityIndicator } from 'react-native-paper';
 import { Calendar, DateData } from 'react-native-calendars';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import * as Haptics from 'expo-haptics';
 import { supabase } from '../../services/supabase';
 import { Availability, Booking } from '../../types';
 import { BookingStackParamList } from '../../navigation/types';
@@ -162,7 +163,12 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
                     !slot.available && styles.slotDisabled,
                     selectedTime === slot.start_time && styles.slotSelected,
                   ]}
-                  onPress={() => slot.available && setSelectedTime(slot.start_time)}
+                  onPress={() => {
+                    if (slot.available) {
+                      Haptics.selectionAsync();
+                      setSelectedTime(slot.start_time);
+                    }
+                  }}
                   disabled={!slot.available}
                   activeOpacity={0.7}
                 >

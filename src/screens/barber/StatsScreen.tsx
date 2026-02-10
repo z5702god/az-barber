@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: typography.fontSize.xs,
-    fontFamily: typography.fontFamily.primaryMedium,
+    fontFamily: typography.fontFamily.chineseMedium,
     color: colors.primary,
     letterSpacing: 2,
     paddingHorizontal: spacing.lg,

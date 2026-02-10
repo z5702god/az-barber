@@ -17,6 +17,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { format, parseISO, isAfter, isSameDay } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
+import * as Haptics from 'expo-haptics';
 import { supabase } from '../../services/supabase';
 import { Booking } from '../../types';
 import { RootStackParamList } from '../../navigation/types';
@@ -113,6 +114,7 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   const handleCancel = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     Alert.alert(
       '取消預約',
       '確定要取消這個預約嗎？',
@@ -276,6 +278,7 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             <Text style={styles.totalLabel}>總計</Text>
             <Text style={styles.totalPrice}>${booking.total_price}</Text>
           </View>
+          <Text style={styles.paymentNote}>現場付款</Text>
         </View>
 
         {/* Note Card - Only show for upcoming bookings */}
@@ -319,6 +322,23 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 <Text style={styles.cancelButtonText}>取消預約</Text>
               </>
             )}
+          </TouchableOpacity>
+        )}
+
+        {/* Rebook Button - Show for completed/cancelled bookings */}
+        {!isUpcoming() && booking.barber_id && (
+          <TouchableOpacity
+            style={styles.rebookButton}
+            onPress={() => {
+              (navigation as any).navigate('BookingFlow', {
+                screen: 'SelectServices',
+                params: { barberId: booking.barber_id },
+              });
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="refresh-outline" size={20} color={colors.primary} />
+            <Text style={styles.rebookButtonText}>再次預約</Text>
           </TouchableOpacity>
         )}
 
@@ -563,6 +583,13 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.displayBold,
     color: colors.primary,
   },
+  paymentNote: {
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontFamily.chinese,
+    color: colors.mutedForeground,
+    textAlign: 'right',
+    marginTop: spacing.xs,
+  },
   cancelButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -578,6 +605,22 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.md,
     fontFamily: typography.fontFamily.chineseMedium,
     color: colors.destructive,
+  },
+  rebookButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    paddingVertical: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  rebookButtonText: {
+    fontSize: typography.fontSize.md,
+    fontFamily: typography.fontFamily.chineseMedium,
+    color: colors.primary,
   },
   bottomPadding: {
     height: spacing.xxl,

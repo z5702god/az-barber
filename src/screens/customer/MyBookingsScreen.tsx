@@ -17,6 +17,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { Booking } from '../../types';
 import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, borderRadius, typography } from '../../theme';
+import { BookingCardSkeleton } from '../../components/Skeleton';
 
 type TabType = 'upcoming' | 'history';
 
@@ -66,20 +67,6 @@ export const MyBookingsScreen: React.FC = () => {
     fetchBookings();
   };
 
-  const handleCancel = async (bookingId: string) => {
-    try {
-      const { error } = await supabase
-        .from('bookings')
-        .update({ status: 'cancelled' })
-        .eq('id', bookingId);
-
-      if (error) throw error;
-      fetchBookings();
-    } catch (error) {
-      // Error cancelling booking
-    }
-  };
-
   // 判斷預約是否為即將到來
   const isUpcoming = (booking: Booking): boolean => {
     if (booking.status !== 'confirmed') return false;
@@ -106,6 +93,24 @@ export const MyBookingsScreen: React.FC = () => {
 
   const displayedBookings = activeTab === 'upcoming' ? upcomingBookings : pastBookings;
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'completed': return '已完成';
+      case 'cancelled': return '已取消';
+      case 'confirmed': return '已確認';
+      default: return status;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return colors.success;
+      case 'cancelled': return colors.mutedForeground;
+      case 'confirmed': return colors.primary;
+      default: return colors.mutedForeground;
+    }
+  };
+
   const renderBookingCard = (booking: Booking) => {
     const dateObj = parseISO(booking.booking_date);
     const day = format(dateObj, 'dd');
@@ -114,6 +119,7 @@ export const MyBookingsScreen: React.FC = () => {
       ?.map((s: any) => s.service?.name)
       .filter(Boolean)
       .join(' + ') || '服務';
+    const showStatus = activeTab === 'history';
 
     return (
       <TouchableOpacity
@@ -123,12 +129,21 @@ export const MyBookingsScreen: React.FC = () => {
         onPress={() => navigation.navigate('BookingDetail', { bookingId: booking.id })}
       >
         <View style={styles.dateColumn}>
-          <Text style={styles.dateDay}>{day}</Text>
+          <Text style={[styles.dateDay, booking.status === 'cancelled' && { color: colors.mutedForeground }]}>{day}</Text>
           <Text style={styles.dateMonth}>{month}</Text>
         </View>
 
         <View style={styles.bookingInfo}>
-          <Text style={styles.serviceName}>{serviceNames}</Text>
+          <View style={styles.serviceNameRow}>
+            <Text style={styles.serviceName}>{serviceNames}</Text>
+            {showStatus && (
+              <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(booking.status)}20` }]}>
+                <Text style={[styles.statusBadgeText, { color: getStatusColor(booking.status) }]}>
+                  {getStatusLabel(booking.status)}
+                </Text>
+              </View>
+            )}
+          </View>
           <Text style={styles.bookingDetails}>
             {booking.start_time?.slice(0, 5)} • {booking.barber?.display_name || '理髮師'}
           </Text>
@@ -145,8 +160,22 @@ export const MyBookingsScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+        <View style={styles.tabContainer}>
+          <View style={[styles.tabButton, styles.tabButtonActive]}>
+            <Text style={[styles.tabText, styles.tabTextActive]}>即將到來</Text>
+            <View style={styles.tabIndicator} />
+          </View>
+          <View style={styles.tabButton}>
+            <Text style={styles.tabText}>歷史紀錄</Text>
+          </View>
+        </View>
+        <View style={{ padding: spacing.md }}>
+          <BookingCardSkeleton />
+          <BookingCardSkeleton />
+          <BookingCardSkeleton />
+        </View>
       </View>
     );
   }
@@ -201,7 +230,7 @@ export const MyBookingsScreen: React.FC = () => {
         {displayedBookings.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons
-              name="calendar-outline"
+              name={activeTab === 'upcoming' ? 'calendar-outline' : 'time-outline'}
               size={48}
               color={colors.mutedForeground}
             />
@@ -210,6 +239,20 @@ export const MyBookingsScreen: React.FC = () => {
                 ? '沒有即將到來的預約'
                 : '沒有歷史預約紀錄'}
             </Text>
+            <Text style={styles.emptySubtext}>
+              {activeTab === 'upcoming'
+                ? '立即預約，讓自己煥然一新'
+                : '完成預約後紀錄會顯示在這裡'}
+            </Text>
+            {activeTab === 'upcoming' && (
+              <TouchableOpacity
+                style={styles.emptyActionButton}
+                onPress={() => (navigation as any).navigate('Home')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.emptyActionText}>立即預約</Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : (
           displayedBookings.map(renderBookingCard)
@@ -268,6 +311,7 @@ const styles = StyleSheet.create({
   bookingCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 72,
     backgroundColor: colors.card,
     borderRadius: 0, // 直角風格
     borderWidth: 1,
@@ -294,11 +338,26 @@ const styles = StyleSheet.create({
   bookingInfo: {
     flex: 1,
   },
+  serviceNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.xs,
+  },
   serviceName: {
     fontSize: typography.fontSize.md,
     fontFamily: typography.fontFamily.chineseMedium,
     color: colors.foreground,
-    marginBottom: spacing.xs,
+    flexShrink: 1,
+  },
+  statusBadge: {
+    paddingVertical: 2,
+    paddingHorizontal: spacing.sm,
+  },
+  statusBadgeText: {
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontFamily.secondaryMedium,
+    letterSpacing: 0.5,
   },
   bookingDetails: {
     fontSize: typography.fontSize.sm,
@@ -313,7 +372,24 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: spacing.md,
     fontSize: typography.fontSize.md,
+    fontFamily: typography.fontFamily.chineseMedium,
+    color: colors.foreground,
+  },
+  emptySubtext: {
+    marginTop: spacing.xs,
+    fontSize: typography.fontSize.sm,
     fontFamily: typography.fontFamily.chinese,
     color: colors.mutedForeground,
+  },
+  emptyActionButton: {
+    marginTop: spacing.lg,
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.xl,
+  },
+  emptyActionText: {
+    fontSize: typography.fontSize.md,
+    fontFamily: typography.fontFamily.chineseSemiBold,
+    color: colors.primaryForeground,
   },
 });

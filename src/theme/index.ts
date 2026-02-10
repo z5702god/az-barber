@@ -159,11 +159,30 @@ export const paperTheme = {
   },
 };
 
+// Apple HIG touch target standards
+export const touchTargets = {
+  min: 44,      // Apple HIG minimum (44x44)
+  button: 48,   // Standard button height
+  row: 52,      // List row / menu item height
+};
+
+// Section spacing standards
+export const sectionSpacing = {
+  headerMarginBottom: spacing.md,
+  sectionMarginTop: spacing.xl,
+};
+
 // 常用樣式 - 直角設計風格
 export const commonStyles = {
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  sectionHeader: {
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontFamily.chineseMedium,
+    color: colors.primary,
+    letterSpacing: 2,
   },
   card: {
     backgroundColor: colors.card,

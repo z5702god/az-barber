@@ -11,11 +11,14 @@ import {
 import { Text, ActivityIndicator, Divider } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../services/supabase';
 import { Barber } from '../../types';
 import { BookingStackParamList } from '../../navigation/types';
 import { useAuth } from '../../hooks/useAuth';
 import { colors, spacing, typography } from '../../theme';
+import { PressableButton } from '../../components/PressableButton';
 
 type Props = NativeStackScreenProps<BookingStackParamList, 'ConfirmBooking'>;
 
@@ -31,10 +34,12 @@ export const ConfirmBookingScreen: React.FC<Props> = ({ navigation, route }) => 
   } = route.params;
 
   const { session, user } = useAuth();
+  const insets = useSafeAreaInsets();
   const [barber, setBarber] = useState<Barber | null>(null);
   const [notes, setNotes] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [buttonState, setButtonState] = useState<'idle' | 'submitting' | 'success'>('idle');
   const [loading, setLoading] = useState(true);
+  const submitting = buttonState !== 'idle';
 
   useEffect(() => {
     fetchBarber();
@@ -62,7 +67,7 @@ export const ConfirmBookingScreen: React.FC<Props> = ({ navigation, route }) => 
       return;
     }
 
-    setSubmitting(true);
+    setButtonState('submitting');
     try {
       // 0. Check for conflicting bookings BEFORE creating
       const { data: conflictingBookings, error: checkError } = await supabase
@@ -96,7 +101,7 @@ export const ConfirmBookingScreen: React.FC<Props> = ({ navigation, route }) => 
           '很抱歉，這個時段剛剛被其他人預約了，請重新選擇時段。',
           [{ text: '重新選擇', onPress: () => navigation.goBack() }]
         );
-        setSubmitting(false);
+        setButtonState('idle');
         return;
       }
 
@@ -125,7 +130,7 @@ export const ConfirmBookingScreen: React.FC<Props> = ({ navigation, route }) => 
             '很抱歉，這個時段剛剛被其他人預約了，請重新選擇時段。',
             [{ text: '重新選擇', onPress: () => navigation.goBack() }]
           );
-          setSubmitting(false);
+          setButtonState('idle');
           return;
         }
         throw bookingError;
@@ -143,12 +148,42 @@ export const ConfirmBookingScreen: React.FC<Props> = ({ navigation, route }) => 
 
       if (servicesError) throw servicesError;
 
+      // 3. Send push notification to barber (non-blocking)
+      try {
+        const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('zh-TW', {
+          month: 'long',
+          day: 'numeric',
+        });
+        const serviceNames = selectedServices.map(s => s.name).join('、');
+
+        await supabase.functions.invoke('send-booking-notification', {
+          body: {
+            barberId,
+            customerName: user?.name || '顧客',
+            bookingDate: formattedDate,
+            bookingTime: startTime,
+            services: serviceNames,
+            totalPrice,
+          },
+        });
+      } catch (notifyError) {
+        // Push notification failure should not block booking success
+        if (__DEV__) console.error('Booking notification skipped:', notifyError);
+      }
+
+      // Success haptic + visual feedback before navigating
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setButtonState('success');
+
+      // Brief pause at success state for visual feedback
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       // Navigate to success screen
       navigation.replace('BookingSuccess', { bookingId: booking.id });
     } catch (error) {
       Alert.alert('預約失敗', '請稍後再試');
     } finally {
-      setSubmitting(false);
+      setButtonState('idle');
     }
   };
 
@@ -252,19 +287,30 @@ export const ConfirmBookingScreen: React.FC<Props> = ({ navigation, route }) => 
       </ScrollView>
 
       {/* Bottom Bar */}
-      <View style={styles.bottomBar}>
-        <TouchableOpacity
-          style={[styles.confirmButton, submitting && styles.confirmButtonDisabled]}
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
+        <PressableButton
+          style={[
+            styles.confirmButton,
+            submitting && styles.confirmButtonDisabled,
+            buttonState === 'success' && styles.confirmButtonSuccess,
+          ]}
           onPress={handleConfirm}
           disabled={submitting}
-          activeOpacity={0.8}
         >
-          {submitting ? (
-            <ActivityIndicator size="small" color={colors.primaryForeground} />
+          {buttonState === 'submitting' ? (
+            <View style={styles.buttonContent}>
+              <ActivityIndicator size="small" color={colors.primaryForeground} />
+              <Text style={styles.confirmButtonText}>處理中...</Text>
+            </View>
+          ) : buttonState === 'success' ? (
+            <View style={styles.buttonContent}>
+              <Ionicons name="checkmark-circle" size={20} color={colors.primaryForeground} />
+              <Text style={styles.confirmButtonText}>預約成功</Text>
+            </View>
           ) : (
             <Text style={styles.confirmButtonText}>確認預約</Text>
           )}
-        </TouchableOpacity>
+        </PressableButton>
       </View>
     </View>
   );
@@ -398,7 +444,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
     padding: spacing.md,
-    paddingBottom: spacing.xl,
   },
   confirmButton: {
     backgroundColor: colors.primary,
@@ -410,6 +455,15 @@ const styles = StyleSheet.create({
   },
   confirmButtonDisabled: {
     opacity: 0.7,
+  },
+  confirmButtonSuccess: {
+    backgroundColor: colors.success,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
   },
   confirmButtonText: {
     fontSize: typography.fontSize.md,

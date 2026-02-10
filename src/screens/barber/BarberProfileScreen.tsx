@@ -168,8 +168,10 @@ const styles = StyleSheet.create({
   avatarContainer: {
     width: 88,
     height: 88,
-    borderRadius: 0, // 直角風格
-    backgroundColor: colors.primary,
+    borderRadius: 0,
+    backgroundColor: colors.card,
+    borderWidth: 2,
+    borderColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.md,
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: typography.fontSize.xxl,
     fontFamily: typography.fontFamily.displayBold,
-    color: colors.primaryForeground,
+    color: colors.primary,
   },
   name: {
     fontSize: typography.fontSize.xl,

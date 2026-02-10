@@ -6,10 +6,14 @@ import {
   TouchableOpacity,
   StatusBar,
   Alert,
+  LayoutAnimation,
+  UIManager,
+  Platform,
 } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { supabase } from '../../services/supabase';
 import { Service } from '../../types';
 import { BookingStackParamList } from '../../navigation/types';
@@ -95,6 +99,8 @@ export const SelectServicesScreen: React.FC<Props> = ({ navigation, route }) => 
   }, [services]);
 
   const toggleService = (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const newSelected = new Set(selectedIds);
     const selectedService = services.find(s => s.id === id);
 

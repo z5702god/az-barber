@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { PaperProvider, MD3DarkTheme } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -85,32 +86,45 @@ export default function App() {
   // - JetBrains Mono: Titles (technical, clean)
   // - Manrope: Body text (readable, modern)
   // - Inter: Labels/UI elements (clean, functional)
+  const fonts: Record<string, any> = {
+    ...MD3DarkTheme.fonts,
+    // Body text - Manrope for readability
+    bodyLarge: { ...MD3DarkTheme.fonts.bodyLarge, fontFamily: 'Manrope-Regular' },
+    bodyMedium: { ...MD3DarkTheme.fonts.bodyMedium, fontFamily: 'Manrope-Regular' },
+    bodySmall: { ...MD3DarkTheme.fonts.bodySmall, fontFamily: 'Manrope-Regular' },
+    // Labels - Inter for UI elements
+    labelLarge: { ...MD3DarkTheme.fonts.labelLarge, fontFamily: 'Inter-SemiBold' },
+    labelMedium: { ...MD3DarkTheme.fonts.labelMedium, fontFamily: 'Inter-Medium' },
+    labelSmall: { ...MD3DarkTheme.fonts.labelSmall, fontFamily: 'Inter-Medium' },
+    // Titles - JetBrains Mono for technical feel
+    titleLarge: { ...MD3DarkTheme.fonts.titleLarge, fontFamily: 'JetBrainsMono-SemiBold' },
+    titleMedium: { ...MD3DarkTheme.fonts.titleMedium, fontFamily: 'JetBrainsMono-Medium' },
+    titleSmall: { ...MD3DarkTheme.fonts.titleSmall, fontFamily: 'JetBrainsMono-Medium' },
+    // Headlines - Playfair Display for elegance
+    headlineLarge: { ...MD3DarkTheme.fonts.headlineLarge, fontFamily: 'PlayfairDisplay-Bold' },
+    headlineMedium: { ...MD3DarkTheme.fonts.headlineMedium, fontFamily: 'PlayfairDisplay-SemiBold' },
+    headlineSmall: { ...MD3DarkTheme.fonts.headlineSmall, fontFamily: 'PlayfairDisplay-Medium' },
+    // Display - Playfair Display for brand presence
+    displayLarge: { ...MD3DarkTheme.fonts.displayLarge, fontFamily: 'PlayfairDisplay-Bold' },
+    displayMedium: { ...MD3DarkTheme.fonts.displayMedium, fontFamily: 'PlayfairDisplay-SemiBold' },
+    displaySmall: { ...MD3DarkTheme.fonts.displaySmall, fontFamily: 'PlayfairDisplay-Medium' },
+  };
+
+  // Fix Android: disable includeFontPadding to match iOS text rendering.
+  // Android adds extra vertical padding above/below text for font ascenders/descenders,
+  // which makes all text elements (and thus all cards/boxes) taller than on iOS.
+  if (Platform.OS === 'android') {
+    for (const key of Object.keys(fonts)) {
+      if (fonts[key] && typeof fonts[key] === 'object') {
+        fonts[key] = { ...fonts[key], includeFontPadding: false };
+      }
+    }
+  }
+
   const theme = {
     ...MD3DarkTheme,
     ...paperTheme,
-    fonts: {
-      ...MD3DarkTheme.fonts,
-      // Body text - Manrope for readability
-      bodyLarge: { ...MD3DarkTheme.fonts.bodyLarge, fontFamily: 'Manrope-Regular' },
-      bodyMedium: { ...MD3DarkTheme.fonts.bodyMedium, fontFamily: 'Manrope-Regular' },
-      bodySmall: { ...MD3DarkTheme.fonts.bodySmall, fontFamily: 'Manrope-Regular' },
-      // Labels - Inter for UI elements
-      labelLarge: { ...MD3DarkTheme.fonts.labelLarge, fontFamily: 'Inter-SemiBold' },
-      labelMedium: { ...MD3DarkTheme.fonts.labelMedium, fontFamily: 'Inter-Medium' },
-      labelSmall: { ...MD3DarkTheme.fonts.labelSmall, fontFamily: 'Inter-Medium' },
-      // Titles - JetBrains Mono for technical feel
-      titleLarge: { ...MD3DarkTheme.fonts.titleLarge, fontFamily: 'JetBrainsMono-SemiBold' },
-      titleMedium: { ...MD3DarkTheme.fonts.titleMedium, fontFamily: 'JetBrainsMono-Medium' },
-      titleSmall: { ...MD3DarkTheme.fonts.titleSmall, fontFamily: 'JetBrainsMono-Medium' },
-      // Headlines - Playfair Display for elegance
-      headlineLarge: { ...MD3DarkTheme.fonts.headlineLarge, fontFamily: 'PlayfairDisplay-Bold' },
-      headlineMedium: { ...MD3DarkTheme.fonts.headlineMedium, fontFamily: 'PlayfairDisplay-SemiBold' },
-      headlineSmall: { ...MD3DarkTheme.fonts.headlineSmall, fontFamily: 'PlayfairDisplay-Medium' },
-      // Display - Playfair Display for brand presence
-      displayLarge: { ...MD3DarkTheme.fonts.displayLarge, fontFamily: 'PlayfairDisplay-Bold' },
-      displayMedium: { ...MD3DarkTheme.fonts.displayMedium, fontFamily: 'PlayfairDisplay-SemiBold' },
-      displaySmall: { ...MD3DarkTheme.fonts.displaySmall, fontFamily: 'PlayfairDisplay-Medium' },
-    },
+    fonts,
   };
 
   return (

@@ -239,14 +239,16 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 0,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.card,
+    borderWidth: 2,
+    borderColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarInitials: {
     fontSize: typography.fontSize.xxl,
     fontFamily: typography.fontFamily.displayBold,
-    color: colors.primaryForeground,
+    color: colors.primary,
   },
   userName: {
     fontSize: typography.fontSize.xl,
@@ -297,6 +299,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.md,
     gap: spacing.md,
+    minHeight: 52,
   },
   menuItemContent: {
     flex: 1,

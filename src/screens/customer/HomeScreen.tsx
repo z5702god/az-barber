@@ -18,6 +18,7 @@ import { useNotificationContext } from '../../providers/NotificationProvider';
 import { supabase } from '../../services/supabase';
 import { Service } from '../../types';
 import { colors, spacing, typography } from '../../theme';
+import { BarberCardSkeleton } from '../../components/Skeleton';
 
 // Shop background image
 const SHOP_IMAGE = 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800&q=80';
@@ -67,6 +68,14 @@ export const HomeScreen: React.FC = () => {
     return '晚安';
   };
 
+  const isShopOpen = () => {
+    const now = new Date();
+    const day = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    if (day === 1) return false; // Monday closed
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    return currentMinutes >= 720 && currentMinutes < 1260; // 12:00-21:00
+  };
+
   const getUserName = () => {
     if (user?.name) {
       return user.name.split(' ')[0];
@@ -113,7 +122,11 @@ export const HomeScreen: React.FC = () => {
         </View>
 
         {/* Featured Shop Card */}
-        <TouchableOpacity style={styles.featuredCard} activeOpacity={0.9}>
+        <TouchableOpacity
+          style={styles.featuredCard}
+          activeOpacity={0.9}
+          onPress={() => barbers.length > 0 && handleBooking(barbers[0].id)}
+        >
           <ImageBackground
             source={{ uri: SHOP_IMAGE }}
             style={styles.featuredImage}
@@ -154,8 +167,9 @@ export const HomeScreen: React.FC = () => {
           </View>
 
           {barbersLoading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="small" color={colors.primary} />
+            <View style={styles.barbersContainer}>
+              <BarberCardSkeleton />
+              <BarberCardSkeleton />
             </View>
           ) : barbers.length === 0 ? (
             <View style={styles.emptyContainer}>
@@ -217,6 +231,18 @@ export const HomeScreen: React.FC = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>營業時間</Text>
+            <View style={[styles.openBadge, {
+              backgroundColor: isShopOpen() ? 'rgba(76, 175, 80, 0.15)' : 'rgba(255, 92, 51, 0.15)',
+            }]}>
+              <View style={[styles.openDot, {
+                backgroundColor: isShopOpen() ? colors.success : colors.destructive,
+              }]} />
+              <Text style={[styles.openText, {
+                color: isShopOpen() ? colors.success : colors.destructive,
+              }]}>
+                {isShopOpen() ? '營業中' : '已打烊'}
+              </Text>
+            </View>
           </View>
 
           <View style={styles.hoursCard}>
@@ -428,7 +454,9 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 0,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.card,
+    borderWidth: 2,
+    borderColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.sm,
@@ -437,7 +465,7 @@ const styles = StyleSheet.create({
   barberInitials: {
     fontSize: typography.fontSize.lg,
     fontFamily: typography.fontFamily.displayBold,
-    color: colors.primaryForeground,
+    color: colors.primary,
   },
   barberName: {
     fontSize: typography.fontSize.md,
@@ -455,9 +483,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: colors.primary,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.lg,
     marginTop: spacing.xs,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bookButtonText: {
     fontSize: typography.fontSize.sm,
@@ -539,5 +570,21 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.border,
     marginVertical: spacing.sm,
+  },
+  openBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    gap: 6,
+  },
+  openDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  openText: {
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontFamily.chineseMedium,
   },
 });

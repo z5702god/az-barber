@@ -61,6 +61,7 @@ const CustomerTabNavigator: React.FC = () => {
           borderTopColor: colors.border,
           borderTopWidth: 1,
         },
+        tabBarHideOnKeyboard: true,
         tabBarLabelStyle: {
           fontFamily: typography.fontFamily.secondary,
           fontSize: 12,
