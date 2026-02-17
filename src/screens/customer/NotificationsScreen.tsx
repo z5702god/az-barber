@@ -11,6 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, typography } from '../../theme';
+import { useResponsive } from '../../hooks/useResponsive';
 import { NotificationType, Notification as AppNotification } from '../../types/notification';
 import { useNotificationContext } from '../../providers/NotificationProvider';
 
@@ -59,6 +60,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   notification,
   onPress,
 }) => {
+  const r = useResponsive();
   const iconName = NOTIFICATION_ICONS[notification.type] || 'notifications-outline';
   const iconColor = NOTIFICATION_COLORS[notification.type] || colors.mutedForeground;
 
@@ -66,35 +68,37 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
     <TouchableOpacity
       style={[
         styles.notificationItem,
+        { paddingVertical: r.sp.md, paddingHorizontal: r.sp.lg },
         !notification.isRead && styles.unreadItem,
       ]}
       onPress={onPress}
       activeOpacity={0.7}
     >
       {/* 未讀指示器 */}
-      {!notification.isRead && <View style={styles.unreadDot} />}
+      {!notification.isRead && <View style={[styles.unreadDot, { left: r.sp.sm }]} />}
 
       {/* 圖示 */}
-      <View style={[styles.iconContainer, { backgroundColor: `${iconColor}20` }]}>
-        <Ionicons name={iconName as any} size={20} color={iconColor} />
+      <View style={[styles.iconContainer, { width: r.iconSmall, height: r.iconSmall, marginRight: r.sp.md, backgroundColor: `${iconColor}20` }]}>
+        <Ionicons name={iconName as any} size={r.scale(20, 24)} color={iconColor} />
       </View>
 
       {/* 內容 */}
       <View style={styles.contentContainer}>
-        <View style={styles.titleRow}>
+        <View style={[styles.titleRow, { marginBottom: r.sp.xs }]}>
           <Text
             style={[
               styles.notificationTitle,
+              { fontSize: r.fs.md },
               !notification.isRead && styles.unreadText,
             ]}
           >
             {notification.title}
           </Text>
-          <Text style={styles.timeText}>
+          <Text style={[styles.timeText, { fontSize: r.fs.xs }]}>
             {formatRelativeTime(notification.createdAt)}
           </Text>
         </View>
-        <Text style={styles.notificationMessage} numberOfLines={2}>
+        <Text style={[styles.notificationMessage, { fontSize: r.fs.sm }]} numberOfLines={2}>
           {notification.message}
         </Text>
       </View>
@@ -105,6 +109,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 export const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const r = useResponsive();
 
   // 使用 Context 管理通知狀態，這樣離開畫面後狀態仍會保持
   const {
@@ -129,17 +134,17 @@ export const NotificationsScreen: React.FC = () => {
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
+      <View style={[styles.header, { paddingTop: insets.top + r.sp.sm, paddingHorizontal: r.sp.md, paddingBottom: r.sp.md }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.foreground} />
+          <Ionicons name="arrow-back" size={r.scale(24, 28)} color={colors.foreground} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>通知</Text>
+        <Text style={[styles.headerTitle, { fontSize: r.fs.lg }]}>通知</Text>
         {unreadCount > 0 && (
-          <TouchableOpacity style={styles.markReadButton} onPress={markAllAsRead}>
-            <Text style={styles.markReadText}>全部已讀</Text>
+          <TouchableOpacity style={[styles.markReadButton, { paddingVertical: r.sp.xs, paddingHorizontal: r.sp.sm }]} onPress={markAllAsRead}>
+            <Text style={[styles.markReadText, { fontSize: r.fs.sm }]}>全部已讀</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -148,22 +153,22 @@ export const NotificationsScreen: React.FC = () => {
         <View style={styles.emptyContainer}>
           <Ionicons
             name="notifications-outline"
-            size={56}
+            size={r.scale(56, 68)}
             color={colors.mutedForeground}
           />
-          <Text style={styles.emptyTitle}>暫無通知</Text>
-          <Text style={styles.emptyText}>預約確認及變更通知會顯示在這裡</Text>
+          <Text style={[styles.emptyTitle, { fontSize: r.fs.md, marginTop: r.sp.md }]}>暫無通知</Text>
+          <Text style={[styles.emptyText, { fontSize: r.fs.sm, marginTop: r.sp.xs }]}>預約確認及變更通知會顯示在這裡</Text>
         </View>
       ) : (
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { paddingVertical: r.sp.md }]}
           showsVerticalScrollIndicator={false}
         >
           {/* 未讀通知 */}
           {unreadCount > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>未讀 ({unreadCount})</Text>
+            <View style={[styles.section, { marginBottom: r.sp.lg }]}>
+              <Text style={[styles.sectionTitle, { fontSize: r.fs.xs, paddingHorizontal: r.sp.lg, marginBottom: r.sp.sm }]}>未讀 ({unreadCount})</Text>
               {notifications
                 .filter((n) => !n.isRead)
                 .map((notification) => (
@@ -178,8 +183,8 @@ export const NotificationsScreen: React.FC = () => {
 
           {/* 已讀通知 */}
           {notifications.some((n) => n.isRead) && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>
+            <View style={[styles.section, { marginBottom: r.sp.lg }]}>
+              <Text style={[styles.sectionTitle, { fontSize: r.fs.xs, paddingHorizontal: r.sp.lg, marginBottom: r.sp.sm }]}>
                 {unreadCount > 0 ? '較早' : '所有通知'}
               </Text>
               {notifications
@@ -195,7 +200,7 @@ export const NotificationsScreen: React.FC = () => {
           )}
 
           {/* Bottom spacer */}
-          <View style={{ height: spacing.xxl }} />
+          <View style={{ height: r.sp.xxl }} />
         </ScrollView>
       )}
     </View>

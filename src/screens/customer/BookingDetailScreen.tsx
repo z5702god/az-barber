@@ -19,6 +19,7 @@ import { format, parseISO, isAfter, isSameDay } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '../../services/supabase';
+import { useResponsive } from '../../hooks/useResponsive';
 import { Booking } from '../../types';
 import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
@@ -26,6 +27,7 @@ import { colors, spacing, typography } from '../../theme';
 type Props = NativeStackScreenProps<RootStackParamList, 'BookingDetail'>;
 
 export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
+  const r = useResponsive();
   const { bookingId } = route.params;
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
@@ -176,10 +178,10 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   if (!booking) {
     return (
       <SafeAreaView style={styles.errorContainer}>
-        <Ionicons name="alert-circle-outline" size={48} color={colors.mutedForeground} />
-        <Text style={styles.errorText}>找不到預約資訊</Text>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backButtonText}>返回</Text>
+        <Ionicons name="alert-circle-outline" size={r.scale(48, 58)} color={colors.mutedForeground} />
+        <Text style={[styles.errorText, { fontSize: r.fs.md }]}>找不到預約資訊</Text>
+        <TouchableOpacity style={[styles.backButton, { paddingVertical: r.sp.sm, paddingHorizontal: r.sp.lg }]} onPress={() => navigation.goBack()}>
+          <Text style={[styles.backButtonText, { fontSize: r.fs.md }]}>返回</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -196,32 +198,32 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingHorizontal: r.sp.md, paddingVertical: r.sp.md }]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.headerButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.foreground} />
+          <Ionicons name="arrow-back" size={r.scale(24, 28)} color={colors.foreground} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>預約詳情</Text>
+        <Text style={[styles.headerTitle, { fontSize: r.fs.lg }]}>預約詳情</Text>
         <View style={styles.headerButton} />
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Status Badge */}
-        <View style={styles.statusSection}>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) }]}>
-            <Text style={styles.statusText}>{getStatusLabel(booking.status)}</Text>
+        <View style={[styles.statusSection, { paddingVertical: r.sp.lg }]}>
+          <View style={[styles.statusBadge, { paddingVertical: r.sp.xs, paddingHorizontal: r.sp.lg, backgroundColor: getStatusColor(booking.status) }]}>
+            <Text style={[styles.statusText, { fontSize: r.fs.sm }]}>{getStatusLabel(booking.status)}</Text>
           </View>
           {booking.status === 'cancelled' && (
-            <View style={styles.cancellationInfo}>
-              <Text style={styles.cancellationBy}>
+            <View style={[styles.cancellationInfo, { marginTop: r.sp.sm }]}>
+              <Text style={[styles.cancellationBy, { fontSize: r.fs.sm }]}>
                 {(booking as any).cancelled_by === 'barber' ? '理髮師取消' :
                  (booking as any).cancelled_by === 'customer' ? '您已取消' : '已取消'}
               </Text>
               {(booking as any).cancellation_reason ? (
-                <Text style={styles.cancellationReason}>
+                <Text style={[styles.cancellationReason, { fontSize: r.fs.sm, marginTop: r.sp.xs }]}>
                   原因：{(booking as any).cancellation_reason}
                 </Text>
               ) : null}
@@ -230,76 +232,76 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         </View>
 
         {/* Date & Time Card */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="calendar-outline" size={20} color={colors.primary} />
-            <Text style={styles.cardTitle}>預約時間</Text>
+        <View style={[styles.card, { marginHorizontal: r.sp.lg, marginBottom: r.sp.md, padding: r.sp.md }]}>
+          <View style={[styles.cardHeader, { gap: r.sp.sm, marginBottom: r.sp.md, paddingBottom: r.sp.sm }]}>
+            <Ionicons name="calendar-outline" size={r.scale(20, 24)} color={colors.primary} />
+            <Text style={[styles.cardTitle, { fontSize: r.fs.sm }]}>預約時間</Text>
           </View>
-          <Text style={styles.dateText}>{formattedDate}</Text>
-          <View style={styles.timeRow}>
-            <Ionicons name="time-outline" size={18} color={colors.mutedForeground} />
-            <Text style={styles.timeText}>
+          <Text style={[styles.dateText, { fontSize: r.fs.lg, marginBottom: r.sp.sm }]}>{formattedDate}</Text>
+          <View style={[styles.timeRow, { gap: r.sp.xs }]}>
+            <Ionicons name="time-outline" size={r.scale(18, 22)} color={colors.mutedForeground} />
+            <Text style={[styles.timeText, { fontSize: r.fs.md }]}>
               {booking.start_time?.slice(0, 5)} - {booking.end_time?.slice(0, 5)}
             </Text>
-            <Text style={styles.durationText}>({booking.total_duration} 分鐘)</Text>
+            <Text style={[styles.durationText, { fontSize: r.fs.sm }]}>({booking.total_duration} 分鐘)</Text>
           </View>
         </View>
 
         {/* Barber Card */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="person-outline" size={20} color={colors.primary} />
-            <Text style={styles.cardTitle}>服務人員</Text>
+        <View style={[styles.card, { marginHorizontal: r.sp.lg, marginBottom: r.sp.md, padding: r.sp.md }]}>
+          <View style={[styles.cardHeader, { gap: r.sp.sm, marginBottom: r.sp.md, paddingBottom: r.sp.sm }]}>
+            <Ionicons name="person-outline" size={r.scale(20, 24)} color={colors.primary} />
+            <Text style={[styles.cardTitle, { fontSize: r.fs.sm }]}>服務人員</Text>
           </View>
-          <Text style={styles.barberName}>{booking.barber?.display_name || '理髮師'}</Text>
+          <Text style={[styles.barberName, { fontSize: r.fs.lg }]}>{booking.barber?.display_name || '理髮師'}</Text>
         </View>
 
         {/* Services Card */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="cut-outline" size={20} color={colors.primary} />
-            <Text style={styles.cardTitle}>服務項目</Text>
+        <View style={[styles.card, { marginHorizontal: r.sp.lg, marginBottom: r.sp.md, padding: r.sp.md }]}>
+          <View style={[styles.cardHeader, { gap: r.sp.sm, marginBottom: r.sp.md, paddingBottom: r.sp.sm }]}>
+            <Ionicons name="cut-outline" size={r.scale(20, 24)} color={colors.primary} />
+            <Text style={[styles.cardTitle, { fontSize: r.fs.sm }]}>服務項目</Text>
           </View>
           {serviceNames.map((name: string, index: number) => {
             const serviceData = booking.services?.[index] as any;
             const price = serviceData?.service?.price || 0;
             const duration = serviceData?.service?.duration_minutes || 0;
             return (
-              <View key={index} style={styles.serviceRow}>
-                <Text style={styles.serviceName}>{name}</Text>
-                <View style={styles.serviceDetails}>
-                  <Text style={styles.serviceInfo}>{duration}分鐘</Text>
-                  <Text style={styles.servicePrice}>${price}</Text>
+              <View key={index} style={[styles.serviceRow, { paddingVertical: r.sp.sm }]}>
+                <Text style={[styles.serviceName, { fontSize: r.fs.md }]}>{name}</Text>
+                <View style={[styles.serviceDetails, { gap: r.sp.md }]}>
+                  <Text style={[styles.serviceInfo, { fontSize: r.fs.sm }]}>{duration}分鐘</Text>
+                  <Text style={[styles.servicePrice, { fontSize: r.fs.md }]}>${price}</Text>
                 </View>
               </View>
             );
           })}
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>總計</Text>
-            <Text style={styles.totalPrice}>${booking.total_price}</Text>
+          <View style={[styles.totalRow, { paddingTop: r.sp.md, marginTop: r.sp.sm }]}>
+            <Text style={[styles.totalLabel, { fontSize: r.fs.md }]}>總計</Text>
+            <Text style={[styles.totalPrice, { fontSize: r.fs.xl }]}>${booking.total_price}</Text>
           </View>
-          <Text style={styles.paymentNote}>現場付款</Text>
+          <Text style={[styles.paymentNote, { fontSize: r.fs.xs, marginTop: r.sp.xs }]}>現場付款</Text>
         </View>
 
         {/* Note Card - Only show for upcoming bookings */}
         {isUpcoming() && (
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Ionicons name="chatbubble-outline" size={20} color={colors.primary} />
-              <Text style={styles.cardTitle}>給理髮師的備註</Text>
+          <View style={[styles.card, { marginHorizontal: r.sp.lg, marginBottom: r.sp.md, padding: r.sp.md }]}>
+            <View style={[styles.cardHeader, { gap: r.sp.sm, marginBottom: r.sp.md, paddingBottom: r.sp.sm }]}>
+              <Ionicons name="chatbubble-outline" size={r.scale(20, 24)} color={colors.primary} />
+              <Text style={[styles.cardTitle, { fontSize: r.fs.sm }]}>給理髮師的備註</Text>
             </View>
             {booking.customer_note ? (
-              <Text style={styles.noteText}>{booking.customer_note}</Text>
+              <Text style={[styles.noteText, { fontSize: r.fs.md }]}>{booking.customer_note}</Text>
             ) : (
-              <Text style={styles.noteEmptyText}>尚未填寫備註</Text>
+              <Text style={[styles.noteEmptyText, { fontSize: r.fs.md }]}>尚未填寫備註</Text>
             )}
             <TouchableOpacity
-              style={styles.editNoteButton}
+              style={[styles.editNoteButton, { marginTop: r.sp.md, paddingVertical: r.sp.sm, gap: r.sp.xs }]}
               onPress={handleOpenNoteModal}
               activeOpacity={0.8}
             >
-              <Ionicons name="create-outline" size={18} color={colors.primary} />
-              <Text style={styles.editNoteButtonText}>
+              <Ionicons name="create-outline" size={r.scale(18, 22)} color={colors.primary} />
+              <Text style={[styles.editNoteButtonText, { fontSize: r.fs.sm }]}>
                 {booking.customer_note ? '編輯備註' : '新增備註'}
               </Text>
             </TouchableOpacity>
@@ -309,7 +311,7 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         {/* Cancel Button - Only show for upcoming bookings */}
         {isUpcoming() && (
           <TouchableOpacity
-            style={styles.cancelButton}
+            style={[styles.cancelButton, { marginHorizontal: r.sp.lg, marginTop: r.sp.lg, paddingVertical: r.sp.md, gap: r.sp.sm }]}
             onPress={handleCancel}
             disabled={cancelling}
             activeOpacity={0.8}
@@ -318,8 +320,8 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               <ActivityIndicator size="small" color={colors.destructive} />
             ) : (
               <>
-                <Ionicons name="close-circle-outline" size={20} color={colors.destructive} />
-                <Text style={styles.cancelButtonText}>取消預約</Text>
+                <Ionicons name="close-circle-outline" size={r.scale(20, 24)} color={colors.destructive} />
+                <Text style={[styles.cancelButtonText, { fontSize: r.fs.md }]}>取消預約</Text>
               </>
             )}
           </TouchableOpacity>
@@ -328,7 +330,7 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         {/* Rebook Button - Show for completed/cancelled bookings */}
         {!isUpcoming() && booking.barber_id && (
           <TouchableOpacity
-            style={styles.rebookButton}
+            style={[styles.rebookButton, { marginHorizontal: r.sp.lg, marginTop: r.sp.lg, paddingVertical: r.sp.md, gap: r.sp.sm }]}
             onPress={() => {
               (navigation as any).navigate('BookingFlow', {
                 screen: 'SelectServices',
@@ -337,12 +339,12 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             }}
             activeOpacity={0.8}
           >
-            <Ionicons name="refresh-outline" size={20} color={colors.primary} />
-            <Text style={styles.rebookButtonText}>再次預約</Text>
+            <Ionicons name="refresh-outline" size={r.scale(20, 24)} color={colors.primary} />
+            <Text style={[styles.rebookButtonText, { fontSize: r.fs.md }]}>再次預約</Text>
           </TouchableOpacity>
         )}
 
-        <View style={styles.bottomPadding} />
+        <View style={[styles.bottomPadding, { height: r.sp.xxl }]} />
       </ScrollView>
 
       {/* Note Edit Modal */}
@@ -354,16 +356,16 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalOverlay}
+          style={[styles.modalOverlay, { padding: r.sp.lg }]}
         >
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>編輯備註</Text>
-            <Text style={styles.modalSubtitle}>
+          <View style={[styles.modal, { padding: r.sp.lg, maxWidth: r.modalMaxWidth, alignSelf: 'center', width: '100%' }]}>
+            <Text style={[styles.modalTitle, { fontSize: r.fs.lg, marginBottom: r.sp.xs }]}>編輯備註</Text>
+            <Text style={[styles.modalSubtitle, { fontSize: r.fs.sm, marginBottom: r.sp.md }]}>
               告訴理髮師您的需求或狀況（例如：會晚到、髮型偏好等）
             </Text>
 
             <TextInput
-              style={styles.noteInput}
+              style={[styles.noteInput, { padding: r.sp.md, fontSize: r.fs.md, minHeight: r.scale(120, 150) }]}
               value={noteText}
               onChangeText={setNoteText}
               placeholder="輸入備註..."
@@ -374,21 +376,21 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               maxLength={200}
             />
 
-            <Text style={styles.charCount}>{noteText.length}/200</Text>
+            <Text style={[styles.charCount, { fontSize: r.fs.xs, marginTop: r.sp.xs, marginBottom: r.sp.md }]}>{noteText.length}/200</Text>
 
-            <View style={styles.modalButtonRow}>
+            <View style={[styles.modalButtonRow, { gap: r.sp.sm }]}>
               <TouchableOpacity
-                style={styles.modalCancelButton}
+                style={[styles.modalCancelButton, { paddingVertical: r.sp.sm }]}
                 onPress={() => setNoteModalVisible(false)}
               >
-                <Text style={styles.modalCancelButtonText}>取消</Text>
+                <Text style={[styles.modalCancelButtonText, { fontSize: r.fs.sm }]}>取消</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.modalSaveButton}
+                style={[styles.modalSaveButton, { paddingVertical: r.sp.sm }]}
                 onPress={handleSaveNote}
                 disabled={savingNote}
               >
-                <Text style={styles.modalSaveButtonText}>
+                <Text style={[styles.modalSaveButtonText, { fontSize: r.fs.sm }]}>
                   {savingNote ? '儲存中...' : '儲存'}
                 </Text>
               </TouchableOpacity>

@@ -18,6 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfileEdit, ProfileFormErrors } from '../../hooks/useProfileEdit';
+import { useResponsive } from '../../hooks/useResponsive';
 import { Gender } from '../../types';
 import { colors, spacing, typography } from '../../theme';
 
@@ -30,6 +31,7 @@ const GENDER_OPTIONS: { value: Gender; label: string }[] = [
 
 export const EditProfileScreen: React.FC = () => {
   const navigation = useNavigation();
+  const r = useResponsive();
   const { formData, setFormData, loading, error, validate, save } = useProfileEdit();
   const [errors, setErrors] = useState<ProfileFormErrors>({});
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -73,61 +75,62 @@ export const EditProfileScreen: React.FC = () => {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { padding: r.sp.lg, paddingBottom: 100 }]}
         showsVerticalScrollIndicator={false}
       >
         {error && (
-          <View style={styles.errorBanner}>
-            <Ionicons name="alert-circle" size={20} color={colors.destructive} />
-            <Text style={styles.errorText}>{error}</Text>
+          <View style={[styles.errorBanner, { padding: r.sp.md, marginBottom: r.sp.lg, gap: r.sp.sm }]}>
+            <Ionicons name="alert-circle" size={r.scale(20, 24)} color={colors.destructive} />
+            <Text style={[styles.errorText, { fontSize: r.fs.sm }]}>{error}</Text>
           </View>
         )}
 
         {/* Name Input */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>姓名 *</Text>
+        <View style={[styles.inputGroup, { marginBottom: r.sp.lg }]}>
+          <Text style={[styles.label, { fontSize: r.fs.sm, marginBottom: r.sp.sm }]}>姓名 *</Text>
           <TextInput
             testID="name-input"
             value={formData.name}
             onChangeText={(text) => setFormData({ ...formData, name: text })}
-            style={[styles.input, errors.name && styles.inputError]}
+            style={[styles.input, { padding: r.sp.md, fontSize: r.fs.md }, errors.name && styles.inputError]}
             placeholderTextColor={colors.mutedForeground}
             placeholder="請輸入姓名"
           />
-          {errors.name && <Text style={styles.errorHelper}>{errors.name}</Text>}
+          {errors.name && <Text style={[styles.errorHelper, { fontSize: r.fs.xs, marginTop: r.sp.xs }]}>{errors.name}</Text>}
         </View>
 
         {/* Phone Input */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>電話號碼</Text>
+        <View style={[styles.inputGroup, { marginBottom: r.sp.lg }]}>
+          <Text style={[styles.label, { fontSize: r.fs.sm, marginBottom: r.sp.sm }]}>電話號碼</Text>
           <TextInput
             testID="phone-input"
             value={formData.phone}
             onChangeText={(text) => setFormData({ ...formData, phone: text })}
-            style={[styles.input, errors.phone && styles.inputError]}
+            style={[styles.input, { padding: r.sp.md, fontSize: r.fs.md }, errors.phone && styles.inputError]}
             keyboardType="phone-pad"
             placeholderTextColor={colors.mutedForeground}
             placeholder="請輸入電話號碼"
           />
-          {errors.phone && <Text style={styles.errorHelper}>{errors.phone}</Text>}
+          {errors.phone && <Text style={[styles.errorHelper, { fontSize: r.fs.xs, marginTop: r.sp.xs }]}>{errors.phone}</Text>}
         </View>
 
         {/* Birthday Input */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>生日</Text>
+        <View style={[styles.inputGroup, { marginBottom: r.sp.lg }]}>
+          <Text style={[styles.label, { fontSize: r.fs.sm, marginBottom: r.sp.sm }]}>生日</Text>
           <TouchableOpacity
-            style={[styles.input, styles.dateInput]}
+            style={[styles.input, styles.dateInput, { padding: r.sp.md }]}
             onPress={() => setShowDatePicker(true)}
           >
             <Text style={[
               styles.dateText,
+              { fontSize: r.fs.md },
               !formData.birthday && styles.datePlaceholder
             ]}>
               {formatDisplayDate(formData.birthday)}
             </Text>
-            <Ionicons name="calendar-outline" size={20} color={colors.mutedForeground} />
+            <Ionicons name="calendar-outline" size={r.scale(20, 24)} color={colors.mutedForeground} />
           </TouchableOpacity>
-          {errors.birthday && <Text style={styles.errorHelper}>{errors.birthday}</Text>}
+          {errors.birthday && <Text style={[styles.errorHelper, { fontSize: r.fs.xs, marginTop: r.sp.xs }]}>{errors.birthday}</Text>}
         </View>
 
         {showDatePicker && (
@@ -141,20 +144,22 @@ export const EditProfileScreen: React.FC = () => {
         )}
 
         {/* Gender Selection */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>性別</Text>
-          <View style={styles.genderGrid}>
+        <View style={[styles.inputGroup, { marginBottom: r.sp.lg }]}>
+          <Text style={[styles.label, { fontSize: r.fs.sm, marginBottom: r.sp.sm }]}>性別</Text>
+          <View style={[styles.genderGrid, { gap: r.sp.sm }]}>
             {GENDER_OPTIONS.map((option) => (
               <TouchableOpacity
                 key={option.value}
                 style={[
                   styles.genderOption,
+                  { paddingVertical: r.sp.sm, paddingHorizontal: r.sp.md },
                   formData.gender === option.value && styles.genderOptionSelected,
                 ]}
                 onPress={() => setFormData({ ...formData, gender: option.value })}
               >
                 <Text style={[
                   styles.genderText,
+                  { fontSize: r.fs.sm },
                   formData.gender === option.value && styles.genderTextSelected,
                 ]}>
                   {option.label}
@@ -165,15 +170,15 @@ export const EditProfileScreen: React.FC = () => {
         </View>
 
         {/* Divider */}
-        <View style={styles.divider} />
+        <View style={[styles.divider, { marginVertical: r.sp.xl }]} />
 
         {/* Notification Settings */}
-        <Text style={styles.sectionTitle}>通知設定</Text>
+        <Text style={[styles.sectionTitle, { fontSize: r.fs.xs, marginBottom: r.sp.lg }]}>通知設定</Text>
 
-        <View style={styles.switchRow}>
-          <View style={styles.switchLabel}>
-            <Ionicons name="notifications-outline" size={20} color={colors.mutedForeground} />
-            <Text style={styles.switchText}>預約提醒</Text>
+        <View style={[styles.switchRow, { paddingVertical: r.sp.md }]}>
+          <View style={[styles.switchLabel, { gap: r.sp.md }]}>
+            <Ionicons name="notifications-outline" size={r.scale(20, 24)} color={colors.mutedForeground} />
+            <Text style={[styles.switchText, { fontSize: r.fs.md }]}>預約提醒</Text>
           </View>
           <Switch
             value={formData.preferences.booking_reminder}
@@ -187,10 +192,10 @@ export const EditProfileScreen: React.FC = () => {
           />
         </View>
 
-        <View style={styles.switchRow}>
-          <View style={styles.switchLabel}>
-            <Ionicons name="pricetag-outline" size={20} color={colors.mutedForeground} />
-            <Text style={styles.switchText}>促銷通知</Text>
+        <View style={[styles.switchRow, { paddingVertical: r.sp.md }]}>
+          <View style={[styles.switchLabel, { gap: r.sp.md }]}>
+            <Ionicons name="pricetag-outline" size={r.scale(20, 24)} color={colors.mutedForeground} />
+            <Text style={[styles.switchText, { fontSize: r.fs.md }]}>促銷通知</Text>
           </View>
           <Switch
             value={formData.preferences.promo_notifications}
@@ -206,10 +211,10 @@ export const EditProfileScreen: React.FC = () => {
       </ScrollView>
 
       {/* Footer */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { padding: r.sp.lg, paddingBottom: r.sp.xl }]}>
         <TouchableOpacity
           testID="save-button"
-          style={[styles.saveButton, loading && styles.saveButtonDisabled]}
+          style={[styles.saveButton, { paddingVertical: r.sp.md, minHeight: r.scale(52, 60) }, loading && styles.saveButtonDisabled]}
           onPress={handleSave}
           disabled={loading}
           activeOpacity={0.8}
@@ -217,7 +222,7 @@ export const EditProfileScreen: React.FC = () => {
           {loading ? (
             <ActivityIndicator size="small" color={colors.primaryForeground} />
           ) : (
-            <Text style={styles.saveButtonText}>儲存變更</Text>
+            <Text style={[styles.saveButtonText, { fontSize: r.fs.md }]}>儲存變更</Text>
           )}
         </TouchableOpacity>
       </View>

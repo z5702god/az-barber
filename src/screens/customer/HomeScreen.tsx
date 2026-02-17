@@ -19,6 +19,7 @@ import { supabase } from '../../services/supabase';
 import { Service } from '../../types';
 import { colors, spacing, typography } from '../../theme';
 import { BarberCardSkeleton } from '../../components/Skeleton';
+import { useResponsive } from '../../hooks/useResponsive';
 
 // Shop background image
 const SHOP_IMAGE = 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800&q=80';
@@ -28,6 +29,7 @@ export const HomeScreen: React.FC = () => {
   const { user } = useAuth();
   const { barbers, loading: barbersLoading } = useBarbers();
   const insets = useSafeAreaInsets();
+  const r = useResponsive();
   const [popularServices, setPopularServices] = useState<Service[]>([]);
 
   // 使用 Context 取得未讀通知數量（這樣標記已讀後會即時更新）
@@ -92,25 +94,25 @@ export const HomeScreen: React.FC = () => {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + spacing.md }]}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + r.sp.md }]}
         showsVerticalScrollIndicator={false}
         removeClippedSubviews={true}
         overScrollMode="never"
       >
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingHorizontal: r.sp.lg, paddingBottom: r.sp.md }]}>
           <View>
-            <Text style={styles.greeting}>{getGreeting()}</Text>
-            <Text style={styles.welcomeText}>歡迎回來，{getUserName()}</Text>
+            <Text style={[styles.greeting, { fontSize: r.fs.sm }]}>{getGreeting()}</Text>
+            <Text style={[styles.welcomeText, { fontSize: r.fs.xl }]}>歡迎回來，{getUserName()}</Text>
           </View>
           <TouchableOpacity
-            style={styles.notificationButton}
+            style={[styles.notificationButton, { width: r.iconSize, height: r.iconSize }]}
             onPress={() => {
               // @ts-ignore
               navigation.getParent()?.navigate('Notifications');
             }}
           >
-            <Ionicons name="notifications-outline" size={24} color={colors.primary} />
+            <Ionicons name="notifications-outline" size={r.isTablet ? 28 : 24} color={colors.primary} />
             {unreadCount > 0 && (
               <View style={styles.notificationBadge}>
                 <Text style={styles.notificationBadgeText}>
@@ -123,7 +125,7 @@ export const HomeScreen: React.FC = () => {
 
         {/* Featured Shop Card */}
         <TouchableOpacity
-          style={styles.featuredCard}
+          style={[styles.featuredCard, { marginHorizontal: r.sp.lg, height: r.featuredHeight }]}
           activeOpacity={0.9}
           onPress={() => barbers.length > 0 && handleBooking(barbers[0].id)}
         >
@@ -137,61 +139,68 @@ export const HomeScreen: React.FC = () => {
               locations={[0, 0.4, 1]}
               style={styles.featuredGradient}
             >
-              <Text style={styles.featuredTitle}>AZ Barbershop</Text>
+              <Text style={[styles.featuredTitle, { fontSize: r.fs.xl }]}>AZ Barbershop</Text>
               <View style={styles.ratingContainer}>
-                <Ionicons name="location" size={14} color={colors.mutedForeground} />
-                <Text style={styles.ratingLocation}>台北市中山區民權西路9巷22號</Text>
+                <Ionicons name="location" size={r.isTablet ? 18 : 14} color={colors.mutedForeground} />
+                <Text style={[styles.ratingLocation, { fontSize: r.fs.sm }]}>台北市中山區民權西路9巷22號</Text>
               </View>
             </LinearGradient>
           </ImageBackground>
         </TouchableOpacity>
 
         {/* Quick Actions - AI 助理入口 */}
-        <View style={styles.quickActionsContainer}>
-          <TouchableOpacity style={styles.quickActionCard} onPress={navigateToAIChat} activeOpacity={0.7}>
-            <View style={styles.quickActionIcon}>
-              <Ionicons name="sparkles" size={24} color={colors.primary} />
+        <View style={[styles.quickActionsContainer, { paddingHorizontal: r.sp.lg, marginTop: r.sp.lg }]}>
+          <TouchableOpacity style={[styles.quickActionCard, { padding: r.sp.md }]} onPress={navigateToAIChat} activeOpacity={0.7}>
+            <View style={[styles.quickActionIcon, { width: r.iconSize, height: r.iconSize, marginRight: r.sp.md }]}>
+              <Ionicons name="sparkles" size={r.isTablet ? 28 : 24} color={colors.primary} />
             </View>
             <View style={styles.quickActionContent}>
-              <Text style={styles.quickActionTitle}>小安</Text>
-              <Text style={styles.quickActionSubtitle}>用說的就能預約</Text>
+              <Text style={[styles.quickActionTitle, { fontSize: r.fs.md }]}>小安</Text>
+              <Text style={[styles.quickActionSubtitle, { fontSize: r.fs.sm }]}>用說的就能預約</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.mutedForeground} />
+            <Ionicons name="chevron-forward" size={r.isTablet ? 24 : 20} color={colors.mutedForeground} />
           </TouchableOpacity>
         </View>
 
         {/* Our Barbers Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>我們的設計師</Text>
+        <View style={[styles.section, { marginTop: r.sp.xl, paddingHorizontal: r.sp.lg }]}>
+          <View style={[styles.sectionHeader, { marginBottom: r.sp.md }]}>
+            <Text style={[styles.sectionTitle, { fontSize: r.fs.xs }]}>我們的設計師</Text>
           </View>
 
           {barbersLoading ? (
-            <View style={styles.barbersContainer}>
+            <View style={[styles.barbersContainer, { gap: r.sp.md }]}>
               <BarberCardSkeleton />
               <BarberCardSkeleton />
             </View>
           ) : barbers.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>目前沒有可預約的設計師</Text>
+              <Text style={[styles.emptyText, { fontSize: r.fs.sm }]}>目前沒有可預約的設計師</Text>
             </View>
           ) : (
-            <View style={styles.barbersContainer}>
+            <View style={[styles.barbersContainer, { gap: r.sp.md, ...(r.isTablet && { flexWrap: 'wrap' as const }) }]}>
               {barbers.map((barber) => (
                 <TouchableOpacity
                   key={barber.id}
-                  style={styles.barberCard}
+                  style={[styles.barberCard, {
+                    ...(r.isTablet && {
+                      flex: 0,
+                      width: `${Math.floor(100 / r.gridColumns(2, 3)) - 2}%` as any,
+                    }),
+                    paddingVertical: r.sp.lg,
+                    paddingHorizontal: r.sp.md,
+                  }]}
                   onPress={() => handleBooking(barber.id)}
                   activeOpacity={0.7}
                 >
-                  <View style={styles.barberAvatarBox}>
-                    <Text style={styles.barberInitials} numberOfLines={1} adjustsFontSizeToFit>
+                  <View style={[styles.barberAvatarBox, { width: r.avatarSize, height: r.avatarSize }]}>
+                    <Text style={[styles.barberInitials, { fontSize: r.fs.lg }]} numberOfLines={1} adjustsFontSizeToFit>
                       {barber.display_name}
                     </Text>
                   </View>
-                  <Text style={styles.barberRole}>設計師</Text>
-                  <View style={styles.bookButton}>
-                    <Text style={styles.bookButtonText}>預約</Text>
+                  <Text style={[styles.barberRole, { fontSize: r.fs.sm }]}>設計師</Text>
+                  <View style={[styles.bookButton, { paddingVertical: r.sp.sm + 2, paddingHorizontal: r.sp.lg }]}>
+                    <Text style={[styles.bookButtonText, { fontSize: r.fs.sm }]}>預約</Text>
                   </View>
                 </TouchableOpacity>
               ))}
@@ -200,9 +209,9 @@ export const HomeScreen: React.FC = () => {
         </View>
 
         {/* Popular Services Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>熱門服務</Text>
+        <View style={[styles.section, { marginTop: r.sp.xl, paddingHorizontal: r.sp.lg }]}>
+          <View style={[styles.sectionHeader, { marginBottom: r.sp.md }]}>
+            <Text style={[styles.sectionTitle, { fontSize: r.fs.xs }]}>熱門服務</Text>
           </View>
 
           <View style={styles.servicesContainer}>
@@ -211,15 +220,15 @@ export const HomeScreen: React.FC = () => {
                 ? `${Math.floor(service.duration_minutes / 60)}h${service.duration_minutes % 60 > 0 ? ` ${service.duration_minutes % 60}m` : ''}`
                 : `${service.duration_minutes}m`;
               return (
-                <View key={service.id} style={styles.serviceRow}>
+                <View key={service.id} style={[styles.serviceRow, { padding: r.sp.md }]}>
                   <View style={styles.serviceInfo}>
-                    <Text style={styles.serviceName}>{service.name}</Text>
+                    <Text style={[styles.serviceName, { fontSize: r.fs.md }]}>{service.name}</Text>
                     <View style={styles.serviceMeta}>
-                      <Ionicons name="time-outline" size={12} color={colors.mutedForeground} />
-                      <Text style={styles.serviceMetaText}>{duration}</Text>
+                      <Ionicons name="time-outline" size={r.isTablet ? 14 : 12} color={colors.mutedForeground} />
+                      <Text style={[styles.serviceMetaText, { fontSize: r.fs.sm }]}>{duration}</Text>
                     </View>
                   </View>
-                  <Text style={styles.servicePrice}>${service.price.toLocaleString()}</Text>
+                  <Text style={[styles.servicePrice, { fontSize: r.fs.md }]}>${service.price.toLocaleString()}</Text>
                   {index < popularServices.length - 1 && <View style={styles.serviceDivider} />}
                 </View>
               );
@@ -228,9 +237,9 @@ export const HomeScreen: React.FC = () => {
         </View>
 
         {/* Business Hours */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>營業時間</Text>
+        <View style={[styles.section, { marginTop: r.sp.xl, paddingHorizontal: r.sp.lg }]}>
+          <View style={[styles.sectionHeader, { marginBottom: r.sp.md }]}>
+            <Text style={[styles.sectionTitle, { fontSize: r.fs.xs }]}>營業時間</Text>
             <View style={[styles.openBadge, {
               backgroundColor: isShopOpen() ? 'rgba(76, 175, 80, 0.15)' : 'rgba(255, 92, 51, 0.15)',
             }]}>
@@ -245,15 +254,15 @@ export const HomeScreen: React.FC = () => {
             </View>
           </View>
 
-          <View style={styles.hoursCard}>
+          <View style={[styles.hoursCard, { padding: r.sp.md }]}>
             <View style={styles.hoursRow}>
-              <Text style={styles.hoursDay}>週二 - 週日</Text>
-              <Text style={styles.hoursTime}>12:00 - 21:00</Text>
+              <Text style={[styles.hoursDay, { fontSize: r.fs.md }]}>週二 - 週日</Text>
+              <Text style={[styles.hoursTime, { fontSize: r.fs.md }]}>12:00 - 21:00</Text>
             </View>
-            <View style={styles.hoursDivider} />
+            <View style={[styles.hoursDivider, { marginVertical: r.sp.sm }]} />
             <View style={styles.hoursRow}>
-              <Text style={styles.hoursDay}>週一</Text>
-              <Text style={styles.hoursClosed}>公休</Text>
+              <Text style={[styles.hoursDay, { fontSize: r.fs.md }]}>週一</Text>
+              <Text style={[styles.hoursClosed, { fontSize: r.fs.md }]}>公休</Text>
             </View>
           </View>
         </View>

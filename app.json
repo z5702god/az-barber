@@ -3,7 +3,7 @@
     "name": "AZ Barber",
     "slug": "az-barber-app",
     "scheme": "az-barber-app",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -14,7 +14,7 @@
       "backgroundColor": "#111111"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.azbarber.app",
       "usesAppleSignIn": true,
       "privacyPolicyUrl": "https://z5702god.github.io/az-barber/privacy.html",

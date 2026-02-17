@@ -15,6 +15,7 @@ import { Calendar, DateData } from 'react-native-calendars';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
+import { useResponsive } from '../../hooks/useResponsive';
 import { useBarberBookings, useBarberMonthlyBookingDates, useUpdateBookingStatus } from '../../hooks/useBarberData';
 import { BarberTabParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
@@ -24,6 +25,7 @@ type Props = NativeStackScreenProps<BarberTabParamList, 'BookingCalendar'>;
 
 export const BookingCalendarScreen: React.FC<Props> = () => {
   const { user } = useAuth();
+  const r = useResponsive();
   // 使用 barber_id（barbers 表的 ID），而非 user.id（users 表的 ID）
   const barberId = user?.barber_id || '';
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -139,6 +141,9 @@ export const BookingCalendarScreen: React.FC<Props> = () => {
     textDayFontFamily: typography.fontFamily.body,
     textMonthFontFamily: typography.fontFamily.displayMedium,
     textDayHeaderFontFamily: typography.fontFamily.body,
+    textDayFontSize: r.fs.sm,
+    textMonthFontSize: r.fs.md,
+    textDayHeaderFontSize: r.fs.xs,
   };
 
   return (
@@ -153,16 +158,16 @@ export const BookingCalendarScreen: React.FC<Props> = () => {
         style={styles.calendar}
       />
 
-      <View style={styles.dateHeader}>
-        <Text style={styles.dateTitle}>{formattedDate}</Text>
-        <Text style={styles.bookingCount}>{bookings.length} 筆預約</Text>
+      <View style={[styles.dateHeader, { padding: r.sp.lg }]}>
+        <Text style={[styles.dateTitle, { fontSize: r.fs.md }]}>{formattedDate}</Text>
+        <Text style={[styles.bookingCount, { fontSize: r.fs.sm }]}>{bookings.length} 筆預約</Text>
       </View>
 
-      <ScrollView style={styles.bookingList} showsVerticalScrollIndicator={false}>
+      <ScrollView style={[styles.bookingList, { padding: r.sp.lg }]} showsVerticalScrollIndicator={false}>
         {bookings.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="calendar-outline" size={48} color={colors.mutedForeground} />
-            <Text style={styles.emptyText}>今日無預約</Text>
+            <Ionicons name="calendar-outline" size={r.isTablet ? 56 : 48} color={colors.mutedForeground} />
+            <Text style={[styles.emptyText, { marginTop: r.sp.md, fontSize: r.fs.md }]}>今日無預約</Text>
           </View>
         ) : (
           bookings.map((booking) => {
@@ -172,55 +177,55 @@ export const BookingCalendarScreen: React.FC<Props> = () => {
               || booking.customer?.phone
               || '顧客';
             return (
-            <View key={booking.id} style={styles.bookingCard}>
-              <View style={styles.bookingHeader}>
-                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) }]}>
-                  <Text style={styles.statusText}>{getStatusLabel(booking.status)}</Text>
+            <View key={booking.id} style={[styles.bookingCard, { padding: r.sp.md, marginBottom: r.sp.md }]}>
+              <View style={[styles.bookingHeader, { marginBottom: r.sp.sm }]}>
+                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status), paddingVertical: r.sp.xs, paddingHorizontal: r.sp.sm }]}>
+                  <Text style={[styles.statusText, { fontSize: r.fs.xs }]}>{getStatusLabel(booking.status)}</Text>
                 </View>
-                <View style={styles.timeContainer}>
-                  <Ionicons name="time-outline" size={16} color={colors.mutedForeground} />
-                  <Text style={styles.timeText}>
+                <View style={[styles.timeContainer, { gap: r.sp.xs }]}>
+                  <Ionicons name="time-outline" size={r.isTablet ? 18 : 16} color={colors.mutedForeground} />
+                  <Text style={[styles.timeText, { fontSize: r.fs.sm }]}>
                     {booking.start_time?.slice(0, 5) || ''} - {booking.end_time?.slice(0, 5) || ''}
                   </Text>
                 </View>
               </View>
 
-              <View style={styles.customerNameRow}>
-                <Text style={styles.customerName}>
+              <View style={[styles.customerNameRow, { gap: r.sp.xs, marginBottom: r.sp.xs }]}>
+                <Text style={[styles.customerName, { fontSize: r.fs.lg }]}>
                   {customerDisplayName}
                 </Text>
                 {booking.customer_note && (
-                  <Ionicons name="chatbubble" size={14} color={colors.primary} />
+                  <Ionicons name="chatbubble" size={r.isTablet ? 16 : 14} color={colors.primary} />
                 )}
               </View>
 
-              <Text style={styles.serviceText}>
+              <Text style={[styles.serviceText, { fontSize: r.fs.sm, marginBottom: r.sp.sm }]}>
                 {booking.services?.map((s: any) => s.service?.name).join(' + ')}
               </Text>
 
-              <View style={styles.priceRow}>
-                <Ionicons name="cash-outline" size={16} color={colors.primary} />
-                <Text style={styles.priceText}>${booking.total_price}</Text>
+              <View style={[styles.priceRow, { gap: r.sp.xs }]}>
+                <Ionicons name="cash-outline" size={r.isTablet ? 18 : 16} color={colors.primary} />
+                <Text style={[styles.priceText, { fontSize: r.fs.md }]}>${booking.total_price}</Text>
               </View>
 
               {/* 顧客備註 */}
               {booking.customer_note && (
-                <View style={styles.noteRow}>
-                  <Ionicons name="chatbubble-outline" size={14} color={colors.primary} />
-                  <Text style={styles.noteText}>{booking.customer_note}</Text>
+                <View style={[styles.noteRow, { gap: r.sp.xs, padding: r.sp.sm, marginTop: r.sp.sm }]}>
+                  <Ionicons name="chatbubble-outline" size={r.isTablet ? 16 : 14} color={colors.primary} />
+                  <Text style={[styles.noteText, { fontSize: r.fs.sm }]}>{booking.customer_note}</Text>
                 </View>
               )}
 
               {booking.status === 'confirmed' && (
-                <View style={styles.actionRow}>
+                <View style={[styles.actionRow, { gap: r.sp.sm, marginTop: r.sp.md, paddingTop: r.sp.md }]}>
                   <TouchableOpacity
-                    style={styles.cancelButton}
+                    style={[styles.cancelButton, { gap: r.sp.xs, paddingVertical: r.sp.sm }]}
                     onPress={() => handleOpenCancelModal(booking)}
                     disabled={updating}
                     activeOpacity={0.8}
                   >
-                    <Ionicons name="close" size={18} color={colors.destructive} />
-                    <Text style={styles.cancelButtonText}>取消預約</Text>
+                    <Ionicons name="close" size={r.isTablet ? 20 : 18} color={colors.destructive} />
+                    <Text style={[styles.cancelButtonText, { fontSize: r.fs.sm }]}>取消預約</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -239,28 +244,28 @@ export const BookingCalendarScreen: React.FC<Props> = () => {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalOverlay}
+          style={[styles.modalOverlay, { padding: r.sp.lg }]}
         >
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>取消預約</Text>
+          <View style={[styles.modal, { padding: r.sp.lg, ...(r.isTablet && { maxWidth: r.modalMaxWidth, alignSelf: 'center' as const, width: '100%' }) }]}>
+            <Text style={[styles.modalTitle, { fontSize: r.fs.lg, marginBottom: r.sp.md }]}>取消預約</Text>
             {selectedBooking && (
-              <View style={styles.modalBookingInfo}>
-                <Text style={styles.modalBookingText}>
+              <View style={[styles.modalBookingInfo, { padding: r.sp.md, marginBottom: r.sp.md, gap: r.sp.xs }]}>
+                <Text style={[styles.modalBookingText, { fontSize: r.fs.sm }]}>
                   顧客：{selectedBooking.customer?.name?.trim()
                     || selectedBooking.customer?.email?.split('@')[0]
                     || selectedBooking.customer?.phone
                     || '顧客'}
                 </Text>
-                <Text style={styles.modalBookingText}>
+                <Text style={[styles.modalBookingText, { fontSize: r.fs.sm }]}>
                   時間：{selectedBooking.start_time?.slice(0, 5) || ''}
                 </Text>
               </View>
             )}
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>取消原因（必填）</Text>
+            <View style={[styles.inputGroup, { marginBottom: r.sp.md }]}>
+              <Text style={[styles.inputLabel, { fontSize: r.fs.sm, marginBottom: r.sp.xs }]}>取消原因（必填）</Text>
               <TextInput
-                style={styles.reasonInput}
+                style={[styles.reasonInput, { padding: r.sp.md, fontSize: r.fs.md }]}
                 value={cancelReason}
                 onChangeText={setCancelReason}
                 placeholder="請輸入取消原因，顧客會收到推播通知"
@@ -271,22 +276,23 @@ export const BookingCalendarScreen: React.FC<Props> = () => {
               />
             </View>
 
-            <View style={styles.modalButtonRow}>
+            <View style={[styles.modalButtonRow, { gap: r.sp.sm }]}>
               <TouchableOpacity
-                style={styles.modalCancelButton}
+                style={[styles.modalCancelButton, { paddingVertical: r.sp.sm }]}
                 onPress={() => setCancelModalVisible(false)}
               >
-                <Text style={styles.modalCancelButtonText}>返回</Text>
+                <Text style={[styles.modalCancelButtonText, { fontSize: r.fs.sm }]}>返回</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.modalConfirmButton,
+                  { paddingVertical: r.sp.sm },
                   !cancelReason.trim() && styles.modalConfirmButtonDisabled,
                 ]}
                 onPress={handleConfirmCancel}
                 disabled={!cancelReason.trim() || updating}
               >
-                <Text style={styles.modalConfirmButtonText}>
+                <Text style={[styles.modalConfirmButtonText, { fontSize: r.fs.sm }]}>
                   {updating ? '處理中...' : '確定取消'}
                 </Text>
               </TouchableOpacity>

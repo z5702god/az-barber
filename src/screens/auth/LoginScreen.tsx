@@ -8,9 +8,7 @@ import {
   ScrollView,
   StatusBar,
   TouchableOpacity,
-  ImageBackground,
   Image,
-  Dimensions,
 } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,6 +21,7 @@ import { supabase } from '../../services/supabase';
 import { signInWithLine } from '../../services/lineAuth';
 import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, borderRadius, typography } from '../../theme';
+import { useResponsive } from '../../hooks/useResponsive';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -46,8 +45,6 @@ try {
   // Google Sign-In not available (e.g. Expo Go)
 }
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
 // Barber shop images from Unsplash (same as Pencil design)
 const BARBER_IMAGES = [
   'https://images.unsplash.com/photo-1617655719462-c643bc54914c?w=400&q=80',
@@ -60,6 +57,7 @@ const BARBER_IMAGES = [
 
 export const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const r = useResponsive();
   const [loading, setLoading] = React.useState(false);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -208,39 +206,40 @@ export const LoginScreen: React.FC = () => {
 
   // Render image collage background
   const renderImageCollage = () => {
-    const imageSize = 180;
-    const gap = 8;
+    const imageSize = r.isTablet ? 280 : 180;
+    const imgHeight = r.isTablet ? 380 : 240;
+    const gap = r.isTablet ? 12 : 8;
     const rotation = -15;
 
     return (
       <View style={styles.collageContainer}>
         {/* Row 1 */}
-        <View style={[styles.imageRow, { transform: [{ rotate: `${rotation}deg` }], top: -20, left: -50 }]}>
+        <View style={[styles.imageRow, { gap, transform: [{ rotate: `${rotation}deg` }], top: -20, left: r.isTablet ? -80 : -50 }]}>
           {BARBER_IMAGES.slice(0, 3).map((uri, index) => (
             <Image
               key={`row1-${index}`}
               source={{ uri }}
-              style={[styles.collageImage, { width: imageSize, height: 240 }]}
+              style={[styles.collageImage, { width: imageSize, height: imgHeight }]}
             />
           ))}
         </View>
         {/* Row 2 */}
-        <View style={[styles.imageRow, { transform: [{ rotate: `${rotation}deg` }], top: 210, left: -100 }]}>
+        <View style={[styles.imageRow, { gap, transform: [{ rotate: `${rotation}deg` }], top: r.isTablet ? 340 : 210, left: r.isTablet ? -150 : -100 }]}>
           {BARBER_IMAGES.slice(3, 6).map((uri, index) => (
             <Image
               key={`row2-${index}`}
               source={{ uri }}
-              style={[styles.collageImage, { width: imageSize, height: 240 }]}
+              style={[styles.collageImage, { width: imageSize, height: imgHeight }]}
             />
           ))}
         </View>
         {/* Row 3 */}
-        <View style={[styles.imageRow, { transform: [{ rotate: `${rotation}deg` }], top: 440, left: -50 }]}>
+        <View style={[styles.imageRow, { gap, transform: [{ rotate: `${rotation}deg` }], top: r.isTablet ? 700 : 440, left: r.isTablet ? -80 : -50 }]}>
           {BARBER_IMAGES.slice(0, 3).map((uri, index) => (
             <Image
               key={`row3-${index}`}
               source={{ uri }}
-              style={[styles.collageImage, { width: imageSize, height: 240 }]}
+              style={[styles.collageImage, { width: imageSize, height: imgHeight }]}
             />
           ))}
         </View>
@@ -274,17 +273,17 @@ export const LoginScreen: React.FC = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, r.isTablet && { paddingHorizontal: 80 }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {/* Logo Section */}
           <View style={styles.logoContainer}>
-            <Text style={styles.brandName}>AZ BARBERSHOP</Text>
-            <Text style={styles.tagline}>專業髮型設計</Text>
+            <Text style={[styles.brandName, r.isTablet && { fontSize: 52 }]}>AZ BARBERSHOP</Text>
+            <Text style={[styles.tagline, { fontSize: r.fs.sm }]}>專業髮型設計</Text>
           </View>
 
-          <View style={styles.bottomSection}>
+          <View style={[styles.bottomSection, r.isTablet && { gap: 36 }]}>
             {showEmailForm ? (
               /* Email/Password Form */
               <View style={styles.emailContainer}>
@@ -324,7 +323,7 @@ export const LoginScreen: React.FC = () => {
                   }}
                 />
                 <TouchableOpacity
-                  style={styles.primaryButton}
+                  style={[styles.primaryButton, r.isTablet && { height: 56 }]}
                   onPress={handleEmailLogin}
                   disabled={loading}
                   activeOpacity={0.8}
@@ -357,29 +356,29 @@ export const LoginScreen: React.FC = () => {
                     buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
                     buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
                     cornerRadius={0}
-                    style={styles.appleButton}
+                    style={[styles.appleButton, r.isTablet && { height: 56 }]}
                     onPress={handleAppleLogin}
                   />
                 )}
 
                 <TouchableOpacity
-                  style={styles.lineButton}
+                  style={[styles.lineButton, r.isTablet && { height: 56 }]}
                   onPress={handleLineLogin}
                   disabled={loading}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="chatbubble" size={20} color="#FFFFFF" />
-                  <Text style={styles.lineButtonText}>使用 LINE 登入</Text>
+                  <Ionicons name="chatbubble" size={r.isTablet ? 24 : 20} color="#FFFFFF" />
+                  <Text style={[styles.lineButtonText, { fontSize: r.fs.sm }]}>使用 LINE 登入</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={styles.googleButton}
+                  style={[styles.googleButton, r.isTablet && { height: 56 }]}
                   onPress={handleGoogleLogin}
                   disabled={loading}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="logo-google" size={20} color="#4285F4" />
-                  <Text style={styles.googleButtonText}>使用 Google 登入</Text>
+                  <Ionicons name="logo-google" size={r.isTablet ? 24 : 20} color="#4285F4" />
+                  <Text style={[styles.googleButtonText, { fontSize: r.fs.sm }]}>使用 Google 登入</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity

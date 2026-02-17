@@ -57,6 +57,7 @@ export interface Availability {
   start_time: string; // HH:mm
   end_time: string; // HH:mm
   is_exception: boolean; // true = day off or special hours
+  description?: string; // 特殊休假說明
 }
 
 // Booking status

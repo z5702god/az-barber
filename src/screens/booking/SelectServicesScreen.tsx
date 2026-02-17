@@ -18,6 +18,7 @@ import { supabase } from '../../services/supabase';
 import { Service } from '../../types';
 import { BookingStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
+import { useResponsive } from '../../hooks/useResponsive';
 
 type Props = NativeStackScreenProps<BookingStackParamList, 'SelectServices'>;
 
@@ -40,6 +41,7 @@ const getCategoryForService = (serviceName: string): string => {
 
 export const SelectServicesScreen: React.FC<Props> = ({ navigation, route }) => {
   const { barberId } = route.params;
+  const r = useResponsive();
   const [services, setServices] = useState<Service[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -177,93 +179,99 @@ export const SelectServicesScreen: React.FC<Props> = ({ navigation, route }) => 
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingHorizontal: r.sp.md, paddingTop: r.sp.sm, paddingBottom: r.isTablet ? 160 : 140 }]}
         showsVerticalScrollIndicator={false}
         removeClippedSubviews={true}
         overScrollMode="never"
       >
         {/* Instruction text */}
-        <Text style={styles.instructionText}>
+        <Text style={[styles.instructionText, { fontSize: r.fs.sm, marginBottom: r.sp.lg }]}>
           每個類別可選擇一項服務，可跨類別組合
         </Text>
 
         {groupedServices.map(({ category, services: categoryServices }) => (
-          <View key={category} style={styles.categorySection}>
+          <View key={category} style={[styles.categorySection, { marginBottom: r.sp.lg }]}>
             {/* Category Header */}
-            <View style={styles.categoryHeader}>
+            <View style={[styles.categoryHeader, { marginBottom: r.sp.md, paddingHorizontal: r.sp.xs }]}>
               <View style={styles.categoryLine} />
-              <Text style={styles.categoryTitle}>{category}</Text>
+              <Text style={[styles.categoryTitle, { fontSize: r.fs.xs, paddingHorizontal: r.sp.md }]}>{category}</Text>
               <View style={styles.categoryLine} />
             </View>
 
             {/* Services in Category */}
-            {categoryServices.map((service, index) => {
-              const isSelected = selectedIds.has(service.id);
-              const isLast = index === categoryServices.length - 1;
+            <View style={r.isTablet ? { flexDirection: 'row', flexWrap: 'wrap', gap: r.sp.sm } : undefined}>
+              {categoryServices.map((service, index) => {
+                const isSelected = selectedIds.has(service.id);
+                const isLast = index === categoryServices.length - 1;
 
-              return (
-                <TouchableOpacity
-                  key={service.id}
-                  style={[
-                    styles.serviceCard,
-                    isSelected && styles.serviceCardSelected,
-                    !isLast && styles.serviceCardMargin,
-                  ]}
-                  onPress={() => toggleService(service.id)}
-                  activeOpacity={0.7}
-                >
-                  {/* Selection indicator bar */}
-                  {isSelected && <View style={styles.selectedIndicator} />}
+                return (
+                  <TouchableOpacity
+                    key={service.id}
+                    style={[
+                      styles.serviceCard,
+                      isSelected && styles.serviceCardSelected,
+                      !r.isTablet && !isLast && styles.serviceCardMargin,
+                      r.isTablet && { width: '48.5%' },
+                    ]}
+                    onPress={() => toggleService(service.id)}
+                    activeOpacity={0.7}
+                  >
+                    {/* Selection indicator bar */}
+                    {isSelected && <View style={styles.selectedIndicator} />}
 
-                  <View style={styles.serviceContent}>
-                    {/* Custom Radio/Check Circle */}
-                    <View
-                      style={[
-                        styles.radioOuter,
-                        isSelected && styles.radioOuterSelected,
-                      ]}
-                    >
-                      {isSelected && (
-                        <View style={styles.radioInner}>
-                          <Ionicons name="checkmark" size={14} color={colors.background} />
+                    <View style={[styles.serviceContent, { padding: r.sp.md, paddingVertical: r.sp.md + 4 }]}>
+                      {/* Custom Radio/Check Circle */}
+                      <View
+                        style={[
+                          styles.radioOuter,
+                          { width: r.isTablet ? 28 : 22, height: r.isTablet ? 28 : 22, borderRadius: r.isTablet ? 14 : 11, marginRight: r.sp.md },
+                          isSelected && styles.radioOuterSelected,
+                        ]}
+                      >
+                        {isSelected && (
+                          <View style={styles.radioInner}>
+                            <Ionicons name="checkmark" size={r.isTablet ? 18 : 14} color={colors.background} />
+                          </View>
+                        )}
+                      </View>
+
+                      {/* Service Info */}
+                      <View style={[styles.serviceInfo, { paddingRight: r.sp.sm }]}>
+                        <Text style={[
+                          styles.serviceName,
+                          { fontSize: r.fs.md },
+                          isSelected && styles.serviceNameSelected,
+                        ]}>
+                          {service.name}
+                        </Text>
+                        <View style={styles.serviceMeta}>
+                          <Ionicons
+                            name="time-outline"
+                            size={r.isTablet ? 16 : 14}
+                            color={colors.mutedForeground}
+                          />
+                          <Text style={[styles.serviceDuration, { fontSize: r.fs.sm }]}>
+                            {formatDuration(service.duration_minutes)}
+                          </Text>
                         </View>
-                      )}
-                    </View>
+                      </View>
 
-                    {/* Service Info */}
-                    <View style={styles.serviceInfo}>
-                      <Text style={[
-                        styles.serviceName,
-                        isSelected && styles.serviceNameSelected,
-                      ]}>
-                        {service.name}
-                      </Text>
-                      <View style={styles.serviceMeta}>
-                        <Ionicons
-                          name="time-outline"
-                          size={14}
-                          color={colors.mutedForeground}
-                        />
-                        <Text style={styles.serviceDuration}>
-                          {formatDuration(service.duration_minutes)}
+                      {/* Price */}
+                      <View style={styles.priceContainer}>
+                        <Text style={[styles.priceCurrency, { fontSize: r.fs.sm }]}>$</Text>
+                        <Text style={[
+                          styles.servicePrice,
+                          { fontSize: r.fs.lg },
+                          isSelected && styles.servicePriceSelected,
+                        ]}>
+                          {service.price.toLocaleString()}
                         </Text>
                       </View>
                     </View>
-
-                    {/* Price */}
-                    <View style={styles.priceContainer}>
-                      <Text style={styles.priceCurrency}>$</Text>
-                      <Text style={[
-                        styles.servicePrice,
-                        isSelected && styles.servicePriceSelected,
-                      ]}>
-                        {service.price.toLocaleString()}
-                      </Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
         ))}
 
@@ -273,33 +281,33 @@ export const SelectServicesScreen: React.FC<Props> = ({ navigation, route }) => 
 
       {/* Bottom Summary Bar */}
       <View style={styles.summaryBar}>
-        <View style={styles.summaryContent}>
+        <View style={[styles.summaryContent, { padding: r.sp.md, paddingBottom: r.sp.xl + r.sp.sm }]}>
           {/* Left side - Summary info */}
           <View style={styles.summaryLeft}>
             <View style={styles.summaryRow}>
               <View style={styles.summaryBadge}>
-                <Text style={styles.summaryBadgeText}>
+                <Text style={[styles.summaryBadgeText, { fontSize: r.fs.xs }]}>
                   {selectedIds.size}
                 </Text>
               </View>
-              <Text style={styles.summaryLabel}>
+              <Text style={[styles.summaryLabel, { fontSize: r.fs.sm }]}>
                 {selectedIds.size === 1 ? '項服務' : '項服務'}
               </Text>
             </View>
 
             <View style={styles.summaryValues}>
-              <Text style={styles.summaryPrice}>
+              <Text style={[styles.summaryPrice, { fontSize: r.fs.xl }]}>
                 ${totalPrice.toLocaleString()}
               </Text>
               {totalDuration > 0 && (
                 <>
-                  <View style={styles.summaryDivider} />
+                  <View style={[styles.summaryDivider, { marginHorizontal: r.sp.sm }]} />
                   <Ionicons
                     name="time-outline"
-                    size={16}
+                    size={r.isTablet ? 20 : 16}
                     color={colors.mutedForeground}
                   />
-                  <Text style={styles.summaryDuration}>
+                  <Text style={[styles.summaryDuration, { fontSize: r.fs.sm }]}>
                     {formatDuration(totalDuration)}
                   </Text>
                 </>
@@ -311,6 +319,7 @@ export const SelectServicesScreen: React.FC<Props> = ({ navigation, route }) => 
           <TouchableOpacity
             style={[
               styles.continueButton,
+              { paddingVertical: r.sp.md, paddingHorizontal: r.sp.lg },
               selectedIds.size === 0 && styles.continueButtonDisabled,
             ]}
             onPress={handleNext}
@@ -318,13 +327,14 @@ export const SelectServicesScreen: React.FC<Props> = ({ navigation, route }) => 
           >
             <Text style={[
               styles.continueButtonText,
+              { fontSize: r.fs.md },
               selectedIds.size === 0 && styles.continueButtonTextDisabled,
             ]}>
               繼續
             </Text>
             <Ionicons
               name="arrow-forward"
-              size={18}
+              size={r.isTablet ? 22 : 18}
               color={selectedIds.size === 0 ? colors.mutedForeground : colors.primaryForeground}
             />
           </TouchableOpacity>

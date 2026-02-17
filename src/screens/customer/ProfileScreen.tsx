@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
+import { useResponsive } from '../../hooks/useResponsive';
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../services/supabase';
 import { ProfileStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
@@ -14,6 +15,7 @@ type ProfileScreenNavigationProp = NativeStackNavigationProp<ProfileStackParamLi
 export const ProfileScreen: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigation = useNavigation<ProfileScreenNavigationProp>();
+  const r = useResponsive();
 
   const handleSignOut = () => {
     Alert.alert(
@@ -114,16 +116,16 @@ export const ProfileScreen: React.FC = () => {
     onPress: () => void;
   }) => (
     <TouchableOpacity
-      style={styles.menuItem}
+      style={[styles.menuItem, { padding: r.sp.md, gap: r.sp.md, minHeight: r.isTablet ? 64 : 52 }]}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Ionicons name={icon as any} size={22} color={colors.mutedForeground} />
+      <Ionicons name={icon as any} size={r.scale(22, 26)} color={colors.mutedForeground} />
       <View style={styles.menuItemContent}>
-        <Text style={styles.menuItemTitle}>{title}</Text>
-        {subtitle && <Text style={styles.menuItemSubtitle}>{subtitle}</Text>}
+        <Text style={[styles.menuItemTitle, { fontSize: r.fs.md }]}>{title}</Text>
+        {subtitle && <Text style={[styles.menuItemSubtitle, { fontSize: r.fs.sm }]}>{subtitle}</Text>}
       </View>
-      <Ionicons name="chevron-forward" size={20} color={colors.border} />
+      <Ionicons name="chevron-forward" size={r.scale(20, 24)} color={colors.border} />
     </TouchableOpacity>
   );
 
@@ -131,51 +133,51 @@ export const ProfileScreen: React.FC = () => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
       {/* Profile Card */}
-      <View style={styles.profileCard}>
-        <View style={styles.avatarContainer}>
+      <View style={[styles.profileCard, { paddingVertical: r.sp.xl, paddingHorizontal: r.sp.lg }]}>
+        <View style={[styles.avatarContainer, { marginBottom: r.sp.md }]}>
           {user?.avatar_url ? (
-            <Avatar.Image size={88} source={{ uri: user.avatar_url }} />
+            <Avatar.Image size={r.avatarLarge} source={{ uri: user.avatar_url }} />
           ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarInitials}>
+            <View style={[styles.avatarPlaceholder, { width: r.avatarLarge, height: r.avatarLarge }]}>
+              <Text style={[styles.avatarInitials, { fontSize: r.fs.xxl }]}>
                 {(user?.name || user?.email || 'U').slice(0, 2).toUpperCase()}
               </Text>
             </View>
           )}
         </View>
-        <Text style={styles.userName}>{user?.name || '尚未設定姓名'}</Text>
-        <Text style={styles.userRole}>{getRoleText(user?.role || 'customer')}</Text>
+        <Text style={[styles.userName, { fontSize: r.fs.xl }]}>{user?.name || '尚未設定姓名'}</Text>
+        <Text style={[styles.userRole, { fontSize: r.fs.sm }]}>{getRoleText(user?.role || 'customer')}</Text>
       </View>
 
       {/* Contact Info */}
-      <View style={styles.card}>
-        <View style={styles.infoRow}>
+      <View style={[styles.card, { marginHorizontal: r.sp.lg, marginTop: r.sp.lg }]}>
+        <View style={[styles.infoRow, { padding: r.sp.md, gap: r.sp.md }]}>
           <Ionicons
             name={loginProvider === 'line' ? 'chatbubble-ellipses-outline' :
                   loginProvider === 'apple' ? 'logo-apple' : 'mail-outline'}
-            size={20}
+            size={r.scale(20, 24)}
             color={colors.mutedForeground}
           />
           <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>
+            <Text style={[styles.infoLabel, { fontSize: r.fs.xs }]}>
               {loginProvider === 'line' ? '登入方式' :
                loginProvider === 'apple' ? '登入方式' : '電子郵件'}
             </Text>
-            <Text style={styles.infoValue}>{getEmailDisplay(user?.email)}</Text>
+            <Text style={[styles.infoValue, { fontSize: r.fs.md }]}>{getEmailDisplay(user?.email)}</Text>
           </View>
         </View>
         <Divider style={styles.divider} />
-        <View style={styles.infoRow}>
-          <Ionicons name="call-outline" size={20} color={colors.mutedForeground} />
+        <View style={[styles.infoRow, { padding: r.sp.md, gap: r.sp.md }]}>
+          <Ionicons name="call-outline" size={r.scale(20, 24)} color={colors.mutedForeground} />
           <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>電話</Text>
-            <Text style={styles.infoValue}>{user?.phone || '尚未設定'}</Text>
+            <Text style={[styles.infoLabel, { fontSize: r.fs.xs }]}>電話</Text>
+            <Text style={[styles.infoValue, { fontSize: r.fs.md }]}>{user?.phone || '尚未設定'}</Text>
           </View>
         </View>
       </View>
 
       {/* Menu Items */}
-      <View style={styles.card}>
+      <View style={[styles.card, { marginHorizontal: r.sp.lg, marginTop: r.sp.lg }]}>
         <MenuItem
           icon="person-outline"
           title="編輯個人資料"
@@ -197,23 +199,23 @@ export const ProfileScreen: React.FC = () => {
 
       {/* Sign Out Button */}
       <TouchableOpacity
-        style={styles.signOutButton}
+        style={[styles.signOutButton, { marginHorizontal: r.sp.lg, marginTop: r.sp.xl, paddingVertical: r.sp.md, gap: r.sp.sm }]}
         onPress={handleSignOut}
         activeOpacity={0.7}
       >
-        <Ionicons name="log-out-outline" size={20} color={colors.primary} />
-        <Text style={styles.signOutText}>登出</Text>
+        <Ionicons name="log-out-outline" size={r.scale(20, 24)} color={colors.primary} />
+        <Text style={[styles.signOutText, { fontSize: r.fs.md }]}>登出</Text>
       </TouchableOpacity>
 
-      <Text style={styles.version}>版本 1.0.0</Text>
+      <Text style={[styles.version, { fontSize: r.fs.xs, marginTop: r.sp.xl }]}>版本 1.0.0</Text>
 
       {/* Delete Account — low-profile text link, Apple requires it to be findable but not prominent */}
       <TouchableOpacity
-        style={styles.deleteAccountLink}
+        style={[styles.deleteAccountLink, { paddingVertical: r.sp.md, marginBottom: r.sp.xxl }]}
         onPress={handleDeleteAccount}
         activeOpacity={0.5}
       >
-        <Text style={styles.deleteAccountText}>刪除帳號</Text>
+        <Text style={[styles.deleteAccountText, { fontSize: r.fs.xs }]}>刪除帳號</Text>
       </TouchableOpacity>
     </ScrollView>
   );

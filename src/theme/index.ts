@@ -240,6 +240,11 @@ export const commonStyles = {
   },
 };
 
+// Responsive breakpoints
+export const breakpoints = {
+  tablet: 768,
+};
+
 export default {
   colors,
   spacing,
@@ -247,4 +252,5 @@ export default {
   typography,
   paperTheme,
   commonStyles,
+  breakpoints,
 };

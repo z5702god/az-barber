@@ -16,6 +16,7 @@ import { NativeStackScreenProps, NativeStackNavigationProp } from '@react-naviga
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/useAuth';
+import { useResponsive } from '../../hooks/useResponsive';
 import { useBarberTodayStats, useBarberBookings, useUpdateBookingStatus } from '../../hooks/useBarberData';
 import { useNotificationContext } from '../../providers/NotificationProvider';
 import { BarberTabParamList, RootStackParamList } from '../../navigation/types';
@@ -26,6 +27,7 @@ type Props = NativeStackScreenProps<BarberTabParamList, 'BarberHome'>;
 
 export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth();
+  const r = useResponsive();
   const insets = useSafeAreaInsets();
   const rootNavigation = navigation.getParent<NativeStackNavigationProp<RootStackParamList>>();
   const { unreadCount } = useNotificationContext();
@@ -111,15 +113,15 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
         }
       >
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { padding: r.sp.lg }]}>
           <View>
-            <Text style={styles.greeting}>{getGreeting()}</Text>
-            <Text style={styles.userName}>{user?.name || '理髮師'}</Text>
+            <Text style={[styles.greeting, { fontSize: r.fs.sm, marginBottom: r.sp.xs }]}>{getGreeting()}</Text>
+            <Text style={[styles.userName, { fontSize: r.fs.xl }]}>{user?.name || '理髮師'}</Text>
           </View>
-          <View style={styles.headerRight}>
-            <Text style={styles.dateText}>{formatTodayDate()}</Text>
+          <View style={[styles.headerRight, { gap: r.sp.md }]}>
+            <Text style={[styles.dateText, { fontSize: r.fs.sm }]}>{formatTodayDate()}</Text>
             <TouchableOpacity
-              style={styles.bellButton}
+              style={[styles.bellButton, { padding: r.sp.sm }]}
               onPress={() => {
                 if (rootNavigation) {
                   rootNavigation.navigate('Notifications');
@@ -129,10 +131,10 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
               }}
               activeOpacity={0.7}
             >
-              <Ionicons name="notifications-outline" size={24} color={colors.foreground} />
+              <Ionicons name="notifications-outline" size={r.isTablet ? 28 : 24} color={colors.foreground} />
               {unreadCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>
+                <View style={[styles.badge, { minWidth: r.isTablet ? 22 : 18, height: r.isTablet ? 22 : 18, borderRadius: r.isTablet ? 11 : 9 }]}>
+                  <Text style={[styles.badgeText, { fontSize: r.isTablet ? 12 : 10 }]}>
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </Text>
                 </View>
@@ -142,31 +144,31 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         {/* Today's Stats */}
-        <Text style={styles.sectionTitle}>今日摘要</Text>
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Ionicons name="calendar" size={24} color={colors.primary} />
-            <Text style={styles.statValue}>{stats.bookingCount}</Text>
-            <Text style={styles.statLabel}>預約數</Text>
+        <Text style={[styles.sectionTitle, { fontSize: r.fs.xs, padding: r.sp.lg, paddingBottom: r.sp.md }]}>今日摘要</Text>
+        <View style={[styles.statsRow, { paddingHorizontal: r.sp.lg, gap: r.sp.md }]}>
+          <View style={[styles.statCard, { padding: r.sp.lg, gap: r.sp.sm }]}>
+            <Ionicons name="calendar" size={r.isTablet ? 28 : 24} color={colors.primary} />
+            <Text style={[styles.statValue, { fontSize: r.fs.xxl }]}>{stats.bookingCount}</Text>
+            <Text style={[styles.statLabel, { fontSize: r.fs.sm }]}>預約數</Text>
           </View>
-          <View style={styles.statCard}>
-            <Ionicons name="cash" size={24} color={colors.primary} />
-            <Text style={styles.statValue}>${stats.estimatedRevenue.toLocaleString()}</Text>
-            <Text style={styles.statLabel}>預估營收</Text>
+          <View style={[styles.statCard, { padding: r.sp.lg, gap: r.sp.sm }]}>
+            <Ionicons name="cash" size={r.isTablet ? 28 : 24} color={colors.primary} />
+            <Text style={[styles.statValue, { fontSize: r.fs.xxl }]}>${stats.estimatedRevenue.toLocaleString()}</Text>
+            <Text style={[styles.statLabel, { fontSize: r.fs.sm }]}>預估營收</Text>
           </View>
         </View>
 
         {/* Upcoming Bookings */}
-        <Text style={styles.sectionTitle}>即將到來的預約</Text>
+        <Text style={[styles.sectionTitle, { fontSize: r.fs.xs, padding: r.sp.lg, paddingBottom: r.sp.md }]}>即將到來的預約</Text>
 
         {bookingsLoading ? (
-          <View style={styles.loadingContainer}>
+          <View style={[styles.loadingContainer, { padding: r.sp.xl }]}>
             <ActivityIndicator size="small" color={colors.primary} />
           </View>
         ) : upcomingBookings.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Ionicons name="calendar-outline" size={40} color={colors.mutedForeground} />
-            <Text style={styles.emptyText}>今天沒有更多預約了</Text>
+          <View style={[styles.emptyCard, { marginHorizontal: r.sp.lg, padding: r.sp.xl, gap: r.sp.md }]}>
+            <Ionicons name="calendar-outline" size={r.isTablet ? 48 : 40} color={colors.mutedForeground} />
+            <Text style={[styles.emptyText, { fontSize: r.fs.md }]}>今天沒有更多預約了</Text>
           </View>
         ) : (
           upcomingBookings.map((booking) => {
@@ -176,42 +178,42 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
               || booking.customer?.phone
               || '顧客';
             return (
-            <View key={booking.id} style={styles.bookingCard}>
-              <View style={styles.bookingHeader}>
-                <View style={styles.timeBox}>
-                  <Text style={styles.timeText}>{booking.start_time?.slice(0, 5) || ''}</Text>
+            <View key={booking.id} style={[styles.bookingCard, { marginHorizontal: r.sp.lg, marginBottom: r.sp.md, padding: r.sp.md }]}>
+              <View style={[styles.bookingHeader, { gap: r.sp.md, marginBottom: r.sp.md }]}>
+                <View style={[styles.timeBox, { paddingVertical: r.sp.sm, paddingHorizontal: r.sp.md }]}>
+                  <Text style={[styles.timeText, { fontSize: r.fs.sm }]}>{booking.start_time?.slice(0, 5) || ''}</Text>
                 </View>
                 <View style={styles.bookingInfo}>
-                  <View style={styles.customerNameRow}>
-                    <Text style={styles.customerName}>{customerDisplayName}</Text>
+                  <View style={[styles.customerNameRow, { gap: r.sp.xs }]}>
+                    <Text style={[styles.customerName, { fontSize: r.fs.md }]}>{customerDisplayName}</Text>
                     {booking.customer_note && (
-                      <Ionicons name="chatbubble" size={14} color={colors.primary} />
+                      <Ionicons name="chatbubble" size={r.isTablet ? 16 : 14} color={colors.primary} />
                     )}
                   </View>
-                  <Text style={styles.serviceText}>
+                  <Text style={[styles.serviceText, { fontSize: r.fs.sm }]}>
                     {booking.services?.map((s: any) => s.service?.name).join(', ') || '服務'}
                   </Text>
                 </View>
-                <Text style={styles.priceText}>${booking.total_price}</Text>
+                <Text style={[styles.priceText, { fontSize: r.fs.md }]}>${booking.total_price}</Text>
               </View>
 
               {/* 顧客備註 */}
               {booking.customer_note && (
-                <View style={styles.noteRow}>
-                  <Ionicons name="chatbubble-outline" size={14} color={colors.primary} />
-                  <Text style={styles.noteText} numberOfLines={2}>{booking.customer_note}</Text>
+                <View style={[styles.noteRow, { gap: r.sp.xs, padding: r.sp.sm, marginBottom: r.sp.md }]}>
+                  <Ionicons name="chatbubble-outline" size={r.isTablet ? 16 : 14} color={colors.primary} />
+                  <Text style={[styles.noteText, { fontSize: r.fs.sm }]} numberOfLines={2}>{booking.customer_note}</Text>
                 </View>
               )}
 
-              <View style={styles.actionRow}>
+              <View style={[styles.actionRow, { gap: r.sp.sm, paddingTop: r.sp.md }]}>
                 <TouchableOpacity
-                  style={styles.cancelButton}
+                  style={[styles.cancelButton, { paddingVertical: r.sp.sm, gap: r.sp.xs }]}
                   onPress={() => handleOpenCancelModal(booking)}
                   disabled={updating}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="close" size={18} color={colors.destructive} />
-                  <Text style={styles.cancelButtonText}>取消預約</Text>
+                  <Ionicons name="close" size={r.isTablet ? 20 : 18} color={colors.destructive} />
+                  <Text style={[styles.cancelButtonText, { fontSize: r.fs.sm }]}>取消預約</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -229,28 +231,28 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalOverlay}
+          style={[styles.modalOverlay, { padding: r.sp.lg }]}
         >
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>取消預約</Text>
+          <View style={[styles.modal, { padding: r.sp.lg, ...(r.isTablet && { maxWidth: r.modalMaxWidth, alignSelf: 'center' as const, width: '100%' }) }]}>
+            <Text style={[styles.modalTitle, { fontSize: r.fs.lg, marginBottom: r.sp.md }]}>取消預約</Text>
             {selectedBooking && (
-              <View style={styles.modalBookingInfo}>
-                <Text style={styles.modalBookingText}>
+              <View style={[styles.modalBookingInfo, { padding: r.sp.md, marginBottom: r.sp.md, gap: r.sp.xs }]}>
+                <Text style={[styles.modalBookingText, { fontSize: r.fs.sm }]}>
                   顧客：{selectedBooking.customer?.name?.trim()
                     || selectedBooking.customer?.email?.split('@')[0]
                     || selectedBooking.customer?.phone
                     || '顧客'}
                 </Text>
-                <Text style={styles.modalBookingText}>
+                <Text style={[styles.modalBookingText, { fontSize: r.fs.sm }]}>
                   時間：{selectedBooking.start_time?.slice(0, 5)}
                 </Text>
               </View>
             )}
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>取消原因（必填）</Text>
+            <View style={[styles.inputGroup, { marginBottom: r.sp.md }]}>
+              <Text style={[styles.inputLabel, { fontSize: r.fs.sm, marginBottom: r.sp.xs }]}>取消原因（必填）</Text>
               <TextInput
-                style={styles.reasonInput}
+                style={[styles.reasonInput, { padding: r.sp.md, fontSize: r.fs.md }]}
                 value={cancelReason}
                 onChangeText={setCancelReason}
                 placeholder="請輸入取消原因，顧客會收到推播通知"
@@ -261,22 +263,23 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
               />
             </View>
 
-            <View style={styles.modalButtonRow}>
+            <View style={[styles.modalButtonRow, { gap: r.sp.sm }]}>
               <TouchableOpacity
-                style={styles.modalCancelButton}
+                style={[styles.modalCancelButton, { paddingVertical: r.sp.sm }]}
                 onPress={() => setCancelModalVisible(false)}
               >
-                <Text style={styles.modalCancelButtonText}>返回</Text>
+                <Text style={[styles.modalCancelButtonText, { fontSize: r.fs.sm }]}>返回</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.modalConfirmButton,
+                  { paddingVertical: r.sp.sm },
                   !cancelReason.trim() && styles.modalConfirmButtonDisabled,
                 ]}
                 onPress={handleConfirmCancel}
                 disabled={!cancelReason.trim() || updating}
               >
-                <Text style={styles.modalConfirmButtonText}>
+                <Text style={[styles.modalConfirmButtonText, { fontSize: r.fs.sm }]}>
                   {updating ? '處理中...' : '確認取消'}
                 </Text>
               </TouchableOpacity>

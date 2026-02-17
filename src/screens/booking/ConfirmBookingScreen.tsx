@@ -19,6 +19,7 @@ import { BookingStackParamList } from '../../navigation/types';
 import { useAuth } from '../../hooks/useAuth';
 import { colors, spacing, typography } from '../../theme';
 import { PressableButton } from '../../components/PressableButton';
+import { useResponsive } from '../../hooks/useResponsive';
 
 type Props = NativeStackScreenProps<BookingStackParamList, 'ConfirmBooking'>;
 
@@ -35,6 +36,7 @@ export const ConfirmBookingScreen: React.FC<Props> = ({ navigation, route }) => 
 
   const { session, user } = useAuth();
   const insets = useSafeAreaInsets();
+  const r = useResponsive();
   const [barber, setBarber] = useState<Barber | null>(null);
   const [notes, setNotes] = useState('');
   const [buttonState, setButtonState] = useState<'idle' | 'submitting' | 'success'>('idle');
@@ -207,73 +209,73 @@ export const ConfirmBookingScreen: React.FC<Props> = ({ navigation, route }) => 
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { padding: r.sp.md, paddingBottom: r.isTablet ? 140 : 120 }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Appointment Details Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>預約資訊</Text>
+        <View style={[styles.card, { padding: r.sp.md, marginBottom: r.sp.md }]}>
+          <Text style={[styles.cardTitle, { fontSize: r.fs.xs, marginBottom: r.sp.md }]}>預約資訊</Text>
 
-          <View style={styles.infoRow}>
-            <Ionicons name="person-outline" size={20} color={colors.mutedForeground} />
+          <View style={[styles.infoRow, { gap: r.sp.md, paddingVertical: r.sp.sm }]}>
+            <Ionicons name="person-outline" size={r.isTablet ? 24 : 20} color={colors.mutedForeground} />
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>設計師</Text>
-              <Text style={styles.infoValue}>{barber?.display_name || '未知'}</Text>
+              <Text style={[styles.infoLabel, { fontSize: r.fs.xs }]}>設計師</Text>
+              <Text style={[styles.infoValue, { fontSize: r.fs.md }]}>{barber?.display_name || '未知'}</Text>
             </View>
           </View>
 
-          <Divider style={styles.divider} />
+          <Divider style={[styles.divider, { marginVertical: r.sp.xs }]} />
 
-          <View style={styles.infoRow}>
-            <Ionicons name="calendar-outline" size={20} color={colors.mutedForeground} />
+          <View style={[styles.infoRow, { gap: r.sp.md, paddingVertical: r.sp.sm }]}>
+            <Ionicons name="calendar-outline" size={r.isTablet ? 24 : 20} color={colors.mutedForeground} />
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>日期與時間</Text>
-              <Text style={styles.infoValue}>
+              <Text style={[styles.infoLabel, { fontSize: r.fs.xs }]}>日期與時間</Text>
+              <Text style={[styles.infoValue, { fontSize: r.fs.md }]}>
                 {formatDate(date)} • {startTime} - {endTime}
               </Text>
             </View>
           </View>
 
-          <Divider style={styles.divider} />
+          <Divider style={[styles.divider, { marginVertical: r.sp.xs }]} />
 
-          <View style={styles.infoRow}>
-            <Ionicons name="time-outline" size={20} color={colors.mutedForeground} />
+          <View style={[styles.infoRow, { gap: r.sp.md, paddingVertical: r.sp.sm }]}>
+            <Ionicons name="time-outline" size={r.isTablet ? 24 : 20} color={colors.mutedForeground} />
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>時長</Text>
-              <Text style={styles.infoValue}>{totalDuration} 分鐘</Text>
+              <Text style={[styles.infoLabel, { fontSize: r.fs.xs }]}>時長</Text>
+              <Text style={[styles.infoValue, { fontSize: r.fs.md }]}>{totalDuration} 分鐘</Text>
             </View>
           </View>
         </View>
 
         {/* Services Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>服務項目</Text>
+        <View style={[styles.card, { padding: r.sp.md, marginBottom: r.sp.md }]}>
+          <Text style={[styles.cardTitle, { fontSize: r.fs.xs, marginBottom: r.sp.md }]}>服務項目</Text>
 
           {selectedServices.map((service, index) => (
             <React.Fragment key={service.id}>
-              <View style={styles.serviceRow}>
+              <View style={[styles.serviceRow, { paddingVertical: r.sp.sm }]}>
                 <View style={styles.serviceInfo}>
-                  <Text style={styles.serviceName}>{service.name}</Text>
-                  <Text style={styles.serviceDuration}>{service.duration_minutes} 分鐘</Text>
+                  <Text style={[styles.serviceName, { fontSize: r.fs.md }]}>{service.name}</Text>
+                  <Text style={[styles.serviceDuration, { fontSize: r.fs.sm }]}>{service.duration_minutes} 分鐘</Text>
                 </View>
-                <Text style={styles.servicePrice}>${service.price}</Text>
+                <Text style={[styles.servicePrice, { fontSize: r.fs.md }]}>${service.price}</Text>
               </View>
-              {index < selectedServices.length - 1 && <Divider style={styles.divider} />}
+              {index < selectedServices.length - 1 && <Divider style={[styles.divider, { marginVertical: r.sp.xs }]} />}
             </React.Fragment>
           ))}
 
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>總計</Text>
-            <Text style={styles.totalPrice}>${totalPrice.toLocaleString()}</Text>
+          <View style={[styles.totalRow, { marginTop: r.sp.md, paddingTop: r.sp.md }]}>
+            <Text style={[styles.totalLabel, { fontSize: r.fs.md }]}>總計</Text>
+            <Text style={[styles.totalPrice, { fontSize: r.fs.xl }]}>${totalPrice.toLocaleString()}</Text>
           </View>
-          <Text style={styles.paymentNote}>現場付款</Text>
+          <Text style={[styles.paymentNote, { fontSize: r.fs.xs, marginTop: r.sp.xs }]}>現場付款</Text>
         </View>
 
         {/* Notes Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>備註（選填）</Text>
+        <View style={[styles.card, { padding: r.sp.md, marginBottom: r.sp.md }]}>
+          <Text style={[styles.cardTitle, { fontSize: r.fs.xs, marginBottom: r.sp.md }]}>備註（選填）</Text>
           <TextInput
-            style={styles.notesInput}
+            style={[styles.notesInput, { padding: r.sp.md, fontSize: r.fs.md, minHeight: r.isTablet ? 100 : 80 }]}
             placeholder="有任何特殊需求或備註嗎..."
             placeholderTextColor={colors.mutedForeground}
             value={notes}
@@ -287,10 +289,11 @@ export const ConfirmBookingScreen: React.FC<Props> = ({ navigation, route }) => 
       </ScrollView>
 
       {/* Bottom Bar */}
-      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
+      <View style={[styles.bottomBar, { padding: r.sp.md, paddingBottom: Math.max(insets.bottom, r.sp.md) }]}>
         <PressableButton
           style={[
             styles.confirmButton,
+            { paddingVertical: r.sp.md, minHeight: r.isTablet ? 60 : 52 },
             submitting && styles.confirmButtonDisabled,
             buttonState === 'success' && styles.confirmButtonSuccess,
           ]}
@@ -298,17 +301,17 @@ export const ConfirmBookingScreen: React.FC<Props> = ({ navigation, route }) => 
           disabled={submitting}
         >
           {buttonState === 'submitting' ? (
-            <View style={styles.buttonContent}>
+            <View style={[styles.buttonContent, { gap: r.sp.sm }]}>
               <ActivityIndicator size="small" color={colors.primaryForeground} />
-              <Text style={styles.confirmButtonText}>處理中...</Text>
+              <Text style={[styles.confirmButtonText, { fontSize: r.fs.md }]}>處理中...</Text>
             </View>
           ) : buttonState === 'success' ? (
-            <View style={styles.buttonContent}>
-              <Ionicons name="checkmark-circle" size={20} color={colors.primaryForeground} />
-              <Text style={styles.confirmButtonText}>預約成功</Text>
+            <View style={[styles.buttonContent, { gap: r.sp.sm }]}>
+              <Ionicons name="checkmark-circle" size={r.isTablet ? 24 : 20} color={colors.primaryForeground} />
+              <Text style={[styles.confirmButtonText, { fontSize: r.fs.md }]}>預約成功</Text>
             </View>
           ) : (
-            <Text style={styles.confirmButtonText}>確認預約</Text>
+            <Text style={[styles.confirmButtonText, { fontSize: r.fs.md }]}>確認預約</Text>
           )}
         </PressableButton>
       </View>

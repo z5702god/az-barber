@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/useAuth';
+import { useResponsive } from '../../hooks/useResponsive';
 import { supabase } from '../../services/supabase';
 import { colors, spacing, typography } from '../../theme';
 
@@ -31,6 +32,7 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
 
 export const NotificationSettingsScreen: React.FC = () => {
   const navigation = useNavigation();
+  const r = useResponsive();
   const { user, refreshUser } = useAuth();
   const [preferences, setPreferences] = useState<NotificationPreferences>(DEFAULT_PREFERENCES);
   const [loading, setLoading] = useState(true);
@@ -108,19 +110,19 @@ export const NotificationSettingsScreen: React.FC = () => {
     onValueChange: (value: boolean) => void;
     disabled?: boolean;
   }) => (
-    <View style={[styles.switchRow, disabled && styles.switchRowDisabled]}>
-      <View style={styles.switchLeft}>
+    <View style={[styles.switchRow, { padding: r.sp.md }, disabled && styles.switchRowDisabled]}>
+      <View style={[styles.switchLeft, { gap: r.sp.md }]}>
         <Ionicons
           name={icon as any}
-          size={22}
+          size={r.scale(22, 26)}
           color={disabled ? colors.border : colors.mutedForeground}
         />
         <View style={styles.switchTextContainer}>
-          <Text style={[styles.switchTitle, disabled && styles.textDisabled]}>
+          <Text style={[styles.switchTitle, { fontSize: r.fs.md }, disabled && styles.textDisabled]}>
             {title}
           </Text>
           {description && (
-            <Text style={[styles.switchDescription, disabled && styles.textDisabled]}>
+            <Text style={[styles.switchDescription, { fontSize: r.fs.xs }, disabled && styles.textDisabled]}>
               {description}
             </Text>
           )}
@@ -148,15 +150,15 @@ export const NotificationSettingsScreen: React.FC = () => {
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       {/* Custom Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingHorizontal: r.sp.md, paddingVertical: r.sp.md }]}>
         <TouchableOpacity
-          style={styles.backButton}
+          style={[styles.backButton, { padding: r.sp.sm }]}
           onPress={() => navigation.goBack()}
           activeOpacity={0.7}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.foreground} />
+          <Ionicons name="arrow-back" size={r.scale(24, 28)} color={colors.foreground} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>通知設定</Text>
+        <Text style={[styles.headerTitle, { fontSize: r.fs.lg }]}>通知設定</Text>
         <View style={styles.headerRight}>
           {saving && <ActivityIndicator size="small" color={colors.primary} />}
         </View>
@@ -164,11 +166,11 @@ export const NotificationSettingsScreen: React.FC = () => {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { padding: r.sp.lg, paddingBottom: r.sp.xxl }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Push Notification Master Toggle */}
-        <Text style={styles.sectionTitle}>PUSH NOTIFICATIONS</Text>
+        <Text style={[styles.sectionTitle, { fontSize: r.fs.xs, marginBottom: r.sp.md, marginTop: r.sp.md }]}>PUSH NOTIFICATIONS</Text>
         <View style={styles.card}>
           <SwitchRow
             icon="notifications"
@@ -180,7 +182,7 @@ export const NotificationSettingsScreen: React.FC = () => {
         </View>
 
         {/* Booking Notifications */}
-        <Text style={styles.sectionTitle}>BOOKING NOTIFICATIONS</Text>
+        <Text style={[styles.sectionTitle, { fontSize: r.fs.xs, marginBottom: r.sp.md, marginTop: r.sp.md }]}>BOOKING NOTIFICATIONS</Text>
         <View style={styles.card}>
           <SwitchRow
             icon="calendar"
@@ -211,9 +213,9 @@ export const NotificationSettingsScreen: React.FC = () => {
         </View>
 
         {/* Info Note */}
-        <View style={styles.infoNote}>
-          <Ionicons name="information-circle-outline" size={16} color={colors.mutedForeground} />
-          <Text style={styles.infoText}>
+        <View style={[styles.infoNote, { gap: r.sp.sm, marginTop: r.sp.xl, paddingHorizontal: r.sp.sm }]}>
+          <Ionicons name="information-circle-outline" size={r.scale(16, 20)} color={colors.mutedForeground} />
+          <Text style={[styles.infoText, { fontSize: r.fs.xs, lineHeight: r.scale(18, 22) }]}>
             通知設定會即時儲存。如果您未收到通知，請檢查裝置的通知權限設定。
           </Text>
         </View>

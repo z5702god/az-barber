@@ -17,11 +17,13 @@ import { Booking, Barber } from '../../types';
 import { BookingStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 import { PressableButton } from '../../components/PressableButton';
+import { useResponsive } from '../../hooks/useResponsive';
 
 type Props = NativeStackScreenProps<BookingStackParamList, 'BookingSuccess'>;
 
 export const BookingSuccessScreen: React.FC<Props> = ({ navigation, route }) => {
   const { bookingId } = route.params;
+  const r = useResponsive();
   const [booking, setBooking] = useState<Booking | null>(null);
   const [barber, setBarber] = useState<Barber | null>(null);
   const [loading, setLoading] = useState(true);
@@ -123,37 +125,37 @@ export const BookingSuccessScreen: React.FC<Props> = ({ navigation, route }) => 
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
-      <View style={styles.content}>
+      <View style={[styles.content, { padding: r.sp.xl }]}>
         {/* Success Icon */}
-        <Animated.View style={[styles.iconContainer, { transform: [{ scale: iconScale }] }]}>
-          <Ionicons name="checkmark" size={48} color={colors.primaryForeground} />
+        <Animated.View style={[styles.iconContainer, { width: r.isTablet ? 128 : 96, height: r.isTablet ? 128 : 96, marginBottom: r.sp.xl, transform: [{ scale: iconScale }] }]}>
+          <Ionicons name="checkmark" size={r.isTablet ? 64 : 48} color={colors.primaryForeground} />
         </Animated.View>
 
         <Animated.View style={{ opacity: titleOpacity, transform: [{ translateY: titleTranslateY }] }}>
-          <Text style={styles.title}>預約成功！</Text>
+          <Text style={[styles.title, { fontSize: r.fs.xxl, marginBottom: r.sp.sm }]}>預約成功！</Text>
         </Animated.View>
         <Animated.View style={{ opacity: subtitleOpacity, transform: [{ translateY: subtitleTranslateY }] }}>
-          <Text style={styles.subtitle}>您的預約已確認</Text>
+          <Text style={[styles.subtitle, { fontSize: r.fs.md, marginBottom: r.sp.xl }]}>您的預約已確認</Text>
         </Animated.View>
 
         {/* Booking Details Card */}
         {loading && (
-          <View style={{ marginBottom: spacing.xl }}>
+          <View style={{ marginBottom: r.sp.xl }}>
             <ActivityIndicator size="small" color={colors.primary} />
           </View>
         )}
         {booking && (
-          <Animated.View style={[styles.card, { opacity: cardOpacity, transform: [{ translateY: cardTranslateY }] }]}>
-            <View style={styles.cardRow}>
-              <Ionicons name="calendar-outline" size={20} color={colors.primary} />
-              <Text style={styles.cardText}>
+          <Animated.View style={[styles.card, { padding: r.sp.lg, marginBottom: r.sp.xl, maxWidth: r.isTablet ? 500 : undefined }, { opacity: cardOpacity, transform: [{ translateY: cardTranslateY }] }]}>
+            <View style={[styles.cardRow, { gap: r.sp.md }]}>
+              <Ionicons name="calendar-outline" size={r.isTablet ? 24 : 20} color={colors.primary} />
+              <Text style={[styles.cardText, { fontSize: r.fs.md }]}>
                 {formatDate(booking.booking_date)} {booking.start_time?.slice(0, 5)}
               </Text>
             </View>
-            <View style={styles.cardDivider} />
-            <View style={styles.cardRow}>
-              <Ionicons name="person-outline" size={20} color={colors.primary} />
-              <Text style={styles.cardText}>
+            <View style={[styles.cardDivider, { marginVertical: r.sp.md }]} />
+            <View style={[styles.cardRow, { gap: r.sp.md }]}>
+              <Ionicons name="person-outline" size={r.isTablet ? 24 : 20} color={colors.primary} />
+              <Text style={[styles.cardText, { fontSize: r.fs.md }]}>
                 設計師：{barber?.display_name || '理髮師'}
               </Text>
             </View>
@@ -161,19 +163,19 @@ export const BookingSuccessScreen: React.FC<Props> = ({ navigation, route }) => 
         )}
 
         {/* Buttons */}
-        <View style={styles.buttons}>
+        <View style={[styles.buttons, { gap: r.sp.md, maxWidth: r.isTablet ? 500 : undefined }]}>
           <PressableButton
-            style={styles.primaryButton}
+            style={[styles.primaryButton, { paddingVertical: r.sp.md }]}
             onPress={handleViewBookings}
           >
-            <Text style={styles.primaryButtonText}>查看我的預約</Text>
+            <Text style={[styles.primaryButtonText, { fontSize: r.fs.md }]}>查看我的預約</Text>
           </PressableButton>
 
           <PressableButton
-            style={styles.secondaryButton}
+            style={[styles.secondaryButton, { paddingVertical: r.sp.md }]}
             onPress={handleGoHome}
           >
-            <Text style={styles.secondaryButtonText}>返回首頁</Text>
+            <Text style={[styles.secondaryButtonText, { fontSize: r.fs.md }]}>返回首頁</Text>
           </PressableButton>
         </View>
       </View>

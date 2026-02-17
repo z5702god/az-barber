@@ -14,6 +14,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { supabase } from '../../services/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { useResponsive } from '../../hooks/useResponsive';
 import { Booking } from '../../types';
 import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, borderRadius, typography } from '../../theme';
@@ -26,6 +27,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export const MyBookingsScreen: React.FC = () => {
   const { user } = useAuth();
   const navigation = useNavigation<NavigationProp>();
+  const r = useResponsive();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -124,34 +126,34 @@ export const MyBookingsScreen: React.FC = () => {
     return (
       <TouchableOpacity
         key={booking.id}
-        style={styles.bookingCard}
+        style={[styles.bookingCard, { minHeight: r.isTablet ? 88 : 72, padding: r.sp.md, marginBottom: r.sp.md }]}
         activeOpacity={0.7}
         onPress={() => navigation.navigate('BookingDetail', { bookingId: booking.id })}
       >
-        <View style={styles.dateColumn}>
-          <Text style={[styles.dateDay, booking.status === 'cancelled' && { color: colors.mutedForeground }]}>{day}</Text>
-          <Text style={styles.dateMonth}>{month}</Text>
+        <View style={[styles.dateColumn, { marginRight: r.sp.md, minWidth: r.isTablet ? 60 : 44 }]}>
+          <Text style={[styles.dateDay, { fontSize: r.fs.xl }, booking.status === 'cancelled' && { color: colors.mutedForeground }]}>{day}</Text>
+          <Text style={[styles.dateMonth, { fontSize: r.fs.xs }]}>{month}</Text>
         </View>
 
         <View style={styles.bookingInfo}>
-          <View style={styles.serviceNameRow}>
-            <Text style={styles.serviceName}>{serviceNames}</Text>
+          <View style={[styles.serviceNameRow, { gap: r.sp.sm, marginBottom: r.sp.xs }]}>
+            <Text style={[styles.serviceName, { fontSize: r.fs.md }]}>{serviceNames}</Text>
             {showStatus && (
-              <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(booking.status)}20` }]}>
-                <Text style={[styles.statusBadgeText, { color: getStatusColor(booking.status) }]}>
+              <View style={[styles.statusBadge, { paddingVertical: r.scale(2, 4), paddingHorizontal: r.sp.sm, backgroundColor: `${getStatusColor(booking.status)}20` }]}>
+                <Text style={[styles.statusBadgeText, { fontSize: r.fs.xs, color: getStatusColor(booking.status) }]}>
                   {getStatusLabel(booking.status)}
                 </Text>
               </View>
             )}
           </View>
-          <Text style={styles.bookingDetails}>
+          <Text style={[styles.bookingDetails, { fontSize: r.fs.sm }]}>
             {booking.start_time?.slice(0, 5)} • {booking.barber?.display_name || '理髮師'}
           </Text>
         </View>
 
         <Ionicons
           name="chevron-forward"
-          size={20}
+          size={r.scale(20, 24)}
           color={colors.mutedForeground}
         />
       </TouchableOpacity>
@@ -162,16 +164,16 @@ export const MyBookingsScreen: React.FC = () => {
     return (
       <View style={styles.container}>
         <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-        <View style={styles.tabContainer}>
-          <View style={[styles.tabButton, styles.tabButtonActive]}>
-            <Text style={[styles.tabText, styles.tabTextActive]}>即將到來</Text>
+        <View style={[styles.tabContainer, { paddingHorizontal: r.sp.lg }]}>
+          <View style={[styles.tabButton, styles.tabButtonActive, { paddingVertical: r.sp.md, marginRight: r.sp.xl }]}>
+            <Text style={[styles.tabText, styles.tabTextActive, { fontSize: r.fs.md }]}>即將到來</Text>
             <View style={styles.tabIndicator} />
           </View>
-          <View style={styles.tabButton}>
-            <Text style={styles.tabText}>歷史紀錄</Text>
+          <View style={[styles.tabButton, { paddingVertical: r.sp.md, marginRight: r.sp.xl }]}>
+            <Text style={[styles.tabText, { fontSize: r.fs.md }]}>歷史紀錄</Text>
           </View>
         </View>
-        <View style={{ padding: spacing.md }}>
+        <View style={{ padding: r.sp.md }}>
           <BookingCardSkeleton />
           <BookingCardSkeleton />
           <BookingCardSkeleton />
@@ -185,14 +187,15 @@ export const MyBookingsScreen: React.FC = () => {
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       {/* Tab Buttons */}
-      <View style={styles.tabContainer}>
+      <View style={[styles.tabContainer, { paddingHorizontal: r.sp.lg }]}>
         <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'upcoming' && styles.tabButtonActive]}
+          style={[styles.tabButton, activeTab === 'upcoming' && styles.tabButtonActive, { paddingVertical: r.sp.md, marginRight: r.sp.xl }]}
           onPress={() => setActiveTab('upcoming')}
         >
           <Text style={[
             styles.tabText,
             activeTab === 'upcoming' && styles.tabTextActive,
+            { fontSize: r.fs.md },
           ]}>
             即將到來
           </Text>
@@ -200,12 +203,13 @@ export const MyBookingsScreen: React.FC = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'history' && styles.tabButtonActive]}
+          style={[styles.tabButton, activeTab === 'history' && styles.tabButtonActive, { paddingVertical: r.sp.md, marginRight: r.sp.xl }]}
           onPress={() => setActiveTab('history')}
         >
           <Text style={[
             styles.tabText,
             activeTab === 'history' && styles.tabTextActive,
+            { fontSize: r.fs.md },
           ]}>
             歷史紀錄
           </Text>
@@ -215,7 +219,7 @@ export const MyBookingsScreen: React.FC = () => {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { padding: r.sp.md }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -228,29 +232,29 @@ export const MyBookingsScreen: React.FC = () => {
         overScrollMode="never"
       >
         {displayedBookings.length === 0 ? (
-          <View style={styles.emptyContainer}>
+          <View style={[styles.emptyContainer, { paddingVertical: r.sp.xxl * 2 }]}>
             <Ionicons
               name={activeTab === 'upcoming' ? 'calendar-outline' : 'time-outline'}
-              size={48}
+              size={r.scale(48, 64)}
               color={colors.mutedForeground}
             />
-            <Text style={styles.emptyText}>
+            <Text style={[styles.emptyText, { marginTop: r.sp.md, fontSize: r.fs.md }]}>
               {activeTab === 'upcoming'
                 ? '沒有即將到來的預約'
                 : '沒有歷史預約紀錄'}
             </Text>
-            <Text style={styles.emptySubtext}>
+            <Text style={[styles.emptySubtext, { marginTop: r.sp.xs, fontSize: r.fs.sm }]}>
               {activeTab === 'upcoming'
                 ? '立即預約，讓自己煥然一新'
                 : '完成預約後紀錄會顯示在這裡'}
             </Text>
             {activeTab === 'upcoming' && (
               <TouchableOpacity
-                style={styles.emptyActionButton}
+                style={[styles.emptyActionButton, { marginTop: r.sp.lg, paddingVertical: r.sp.sm + 2, paddingHorizontal: r.sp.xl }]}
                 onPress={() => (navigation as any).navigate('Home')}
                 activeOpacity={0.7}
               >
-                <Text style={styles.emptyActionText}>立即預約</Text>
+                <Text style={[styles.emptyActionText, { fontSize: r.fs.md }]}>立即預約</Text>
               </TouchableOpacity>
             )}
           </View>

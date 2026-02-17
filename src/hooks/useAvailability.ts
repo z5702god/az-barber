@@ -76,7 +76,7 @@ export function useExceptionDates(barberId: string) {
       .eq('barber_id', barberId)
       .not('specific_date', 'is', null)
       .eq('is_exception', true)
-      .gte('specific_date', new Date().toISOString().split('T')[0])
+      .gte('specific_date', (() => { const d = new Date(); return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`; })())
       .order('specific_date');
 
     if (!error) {
@@ -95,7 +95,10 @@ export function useExceptionDates(barberId: string) {
     const end = new Date(endDate);
 
     while (current <= end) {
-      dates.push(current.toISOString().split('T')[0]);
+      const y = current.getFullYear();
+      const m = (current.getMonth() + 1).toString().padStart(2, '0');
+      const d = current.getDate().toString().padStart(2, '0');
+      dates.push(`${y}-${m}-${d}`);
       current.setDate(current.getDate() + 1);
     }
 
@@ -103,8 +106,9 @@ export function useExceptionDates(barberId: string) {
       barber_id: barberId,
       specific_date: date,
       start_time: '00:00',
-      end_time: '00:00',
+      end_time: '23:59',
       is_exception: true,
+      ...(note ? { description: note } : {}),
     }));
 
     await supabase.from('availability').insert(records);

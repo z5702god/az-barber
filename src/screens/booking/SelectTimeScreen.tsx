@@ -20,11 +20,13 @@ import {
   addMinutesToTime
 } from '../../utils/timeSlots';
 import { colors, spacing, borderRadius, typography } from '../../theme';
+import { useResponsive } from '../../hooks/useResponsive';
 
 type Props = NativeStackScreenProps<BookingStackParamList, 'SelectDateTime'>;
 
 export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
   const { barberId, selectedServices, totalDuration, totalPrice } = route.params;
+  const r = useResponsive();
 
   const [selectedDate, setSelectedDate] = useState<string>(formatDate(new Date()));
   const [availability, setAvailability] = useState<Availability | null>(null);
@@ -32,6 +34,7 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
+  const [holidayNote, setHolidayNote] = useState<string | null>(null);
 
   const today = useMemo(() => formatDate(new Date()), []);
 
@@ -45,19 +48,38 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
 
     try {
       setFetchError(false);
-      const dateObj = new Date(date + 'T00:00:00');
+      const dateObj = new Date(date + 'T12:00:00');
       const dayOfWeek = getDayOfWeek(dateObj);
 
-      // Fetch availability for this day
+      // 1. Check for holiday exception on this specific date
+      const { data: exceptionData } = await supabase
+        .from('availability')
+        .select('*')
+        .eq('barber_id', barberId)
+        .eq('specific_date', date)
+        .eq('is_exception', true)
+        .limit(1);
+
+      if (exceptionData && exceptionData.length > 0) {
+        // Holiday — no availability, show description
+        setAvailability(null);
+        setExistingBookings([]);
+        setHolidayNote(exceptionData[0].description || null);
+        return;
+      }
+
+      setHolidayNote(null);
+
+      // 2. Get regular weekly availability for this day
       const { data: availData } = await supabase
         .from('availability')
         .select('*')
         .eq('barber_id', barberId)
-        .or(`day_of_week.eq.${dayOfWeek},specific_date.eq.${date}`)
-        .order('is_exception', { ascending: false })
+        .eq('day_of_week', dayOfWeek)
+        .is('specific_date', null)
         .limit(1);
 
-      // Fetch existing bookings for this date
+      // 3. Fetch existing bookings for this date
       const { data: bookingsData } = await supabase
         .from('bookings')
         .select('*')
@@ -110,13 +132,13 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: r.isTablet ? 120 : 100 }]}
         showsVerticalScrollIndicator={false}
         removeClippedSubviews={true}
         overScrollMode="never"
       >
         {/* Calendar */}
-        <View style={styles.calendarContainer}>
+        <View style={[styles.calendarContainer, { marginHorizontal: r.sp.md }]}>
           <Calendar
             current={selectedDate}
             minDate={today}
@@ -132,9 +154,9 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
               monthTextColor: colors.foreground,
               arrowColor: colors.foreground,
               textDisabledColor: colors.mutedForeground,
-              textDayFontSize: 14,
-              textMonthFontSize: 16,
-              textDayHeaderFontSize: 12,
+              textDayFontSize: r.fs.sm,
+              textMonthFontSize: r.fs.md,
+              textDayHeaderFontSize: r.fs.xs,
             }}
             hideExtraDays
             enableSwipeMonths
@@ -142,24 +164,25 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
         </View>
 
         {/* Available Times Section */}
-        <View style={styles.slotsContainer}>
-          <Text style={styles.slotsTitle}>可預約時段</Text>
+        <View style={[styles.slotsContainer, { padding: r.sp.md }]}>
+          <Text style={[styles.slotsTitle, { fontSize: r.fs.xs, marginBottom: r.sp.md }]}>可預約時段</Text>
 
           {loading ? (
             <ActivityIndicator style={styles.loader} color={colors.primary} />
           ) : fetchError ? (
-            <Text style={styles.noSlots}>載入失敗，請選擇其他日期或重試</Text>
+            <Text style={[styles.noSlots, { fontSize: r.fs.sm }]}>載入失敗，請選擇其他日期或重試</Text>
           ) : !availability ? (
-            <Text style={styles.noSlots}>當日公休</Text>
+            <Text style={[styles.noSlots, { fontSize: r.fs.sm }]}>{holidayNote ? `休假：${holidayNote}` : '當日公休'}</Text>
           ) : timeSlots.filter(s => s.available).length === 0 ? (
-            <Text style={styles.noSlots}>沒有可預約的時段</Text>
+            <Text style={[styles.noSlots, { fontSize: r.fs.sm }]}>沒有可預約的時段</Text>
           ) : (
-            <View style={styles.slotsGrid}>
+            <View style={[styles.slotsGrid, { gap: r.sp.sm }]}>
               {timeSlots.map((slot) => (
                 <TouchableOpacity
                   key={slot.start_time}
                   style={[
                     styles.slotButton,
+                    { minWidth: r.isTablet ? 100 : 76, paddingVertical: r.sp.sm + 4, paddingHorizontal: r.sp.md },
                     !slot.available && styles.slotDisabled,
                     selectedTime === slot.start_time && styles.slotSelected,
                   ]}
@@ -175,6 +198,7 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
                   <Text
                     style={[
                       styles.slotText,
+                      { fontSize: r.fs.sm },
                       !slot.available && styles.slotTextDisabled,
                       selectedTime === slot.start_time && styles.slotTextSelected,
                     ]}
@@ -189,9 +213,9 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
 
         {/* Selection Info */}
         {selectedTime && (
-          <View style={styles.selectionInfo}>
-            <Text style={styles.selectionLabel}>已選擇</Text>
-            <Text style={styles.selectionValue}>
+          <View style={[styles.selectionInfo, { marginHorizontal: r.sp.md, padding: r.sp.md, marginTop: r.sp.md }]}>
+            <Text style={[styles.selectionLabel, { fontSize: r.fs.xs, marginBottom: r.sp.xs }]}>已選擇</Text>
+            <Text style={[styles.selectionValue, { fontSize: r.fs.md }]}>
               {selectedDate.split('-').slice(1).join('/')} • {selectedTime}
             </Text>
           </View>
@@ -199,10 +223,11 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
       </ScrollView>
 
       {/* Bottom Bar */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { padding: r.sp.md, paddingBottom: r.sp.xl }]}>
         <TouchableOpacity
           style={[
             styles.confirmButton,
+            { paddingVertical: r.sp.md },
             !selectedTime && styles.confirmButtonDisabled,
           ]}
           onPress={handleNext}
@@ -210,6 +235,7 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
         >
           <Text style={[
             styles.confirmButtonText,
+            { fontSize: r.fs.md },
             !selectedTime && styles.confirmButtonTextDisabled,
           ]}>
             繼續

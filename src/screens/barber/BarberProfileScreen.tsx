@@ -11,6 +11,7 @@ import { Text, Divider } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
+import { useResponsive } from '../../hooks/useResponsive';
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../services/supabase';
 import { BarberProfileStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
@@ -19,6 +20,7 @@ type Props = NativeStackScreenProps<BarberProfileStackParamList, 'BarberProfileM
 
 export const BarberProfileScreen: React.FC<Props> = ({ navigation }) => {
   const { user, signOut } = useAuth();
+  const r = useResponsive();
 
   const handleSignOut = () => {
     Alert.alert('登出', '確定要登出嗎？', [
@@ -79,13 +81,13 @@ export const BarberProfileScreen: React.FC<Props> = ({ navigation }) => {
     onPress: () => void;
   }) => (
     <TouchableOpacity
-      style={styles.menuItem}
+      style={[styles.menuItem, { padding: r.sp.md, gap: r.sp.md }]}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Ionicons name={icon as any} size={22} color={colors.mutedForeground} />
-      <Text style={styles.menuItemText}>{title}</Text>
-      <Ionicons name="chevron-forward" size={20} color={colors.border} />
+      <Ionicons name={icon as any} size={r.isTablet ? 26 : 22} color={colors.mutedForeground} />
+      <Text style={[styles.menuItemText, { fontSize: r.fs.md }]}>{title}</Text>
+      <Ionicons name="chevron-forward" size={r.isTablet ? 24 : 20} color={colors.border} />
     </TouchableOpacity>
   );
 
@@ -94,21 +96,21 @@ export const BarberProfileScreen: React.FC<Props> = ({ navigation }) => {
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       {/* Profile Header */}
-      <View style={styles.profileHeader}>
-        <View style={styles.avatarContainer}>
-          <Text style={styles.avatarText}>
+      <View style={[styles.profileHeader, { paddingVertical: r.sp.xl, paddingHorizontal: r.sp.lg }]}>
+        <View style={[styles.avatarContainer, { width: r.avatarLarge, height: r.avatarLarge, marginBottom: r.sp.md }]}>
+          <Text style={[styles.avatarText, { fontSize: r.fs.xxl }]}>
             {(user?.name || 'B').slice(0, 2).toUpperCase()}
           </Text>
         </View>
-        <Text style={styles.name}>{user?.name || 'Barber'}</Text>
-        <Text style={styles.email}>{user?.email}</Text>
-        <View style={styles.roleTag}>
-          <Text style={styles.roleText}>理髮師</Text>
+        <Text style={[styles.name, { fontSize: r.fs.xl, marginBottom: r.sp.xs }]}>{user?.name || 'Barber'}</Text>
+        <Text style={[styles.email, { fontSize: r.fs.sm, marginBottom: r.sp.md }]}>{user?.email}</Text>
+        <View style={[styles.roleTag, { paddingVertical: r.sp.xs, paddingHorizontal: r.sp.md }]}>
+          <Text style={[styles.roleText, { fontSize: r.fs.xs }]}>理髮師</Text>
         </View>
       </View>
 
       {/* Menu Items */}
-      <View style={styles.menuCard}>
+      <View style={[styles.menuCard, { marginHorizontal: r.sp.lg, marginTop: r.sp.lg }]}>
         <MenuItem
           icon="person-outline"
           title="編輯個人資料"
@@ -130,25 +132,24 @@ export const BarberProfileScreen: React.FC<Props> = ({ navigation }) => {
 
       {/* Sign Out Button */}
       <TouchableOpacity
-        style={styles.signOutButton}
+        style={[styles.signOutButton, { marginHorizontal: r.sp.lg, marginTop: r.sp.xl, paddingVertical: r.sp.md, gap: r.sp.sm }]}
         onPress={handleSignOut}
         activeOpacity={0.7}
       >
-        <Ionicons name="log-out-outline" size={20} color={colors.primary} />
-        <Text style={styles.signOutText}>登出</Text>
+        <Ionicons name="log-out-outline" size={r.isTablet ? 24 : 20} color={colors.primary} />
+        <Text style={[styles.signOutText, { fontSize: r.fs.md }]}>登出</Text>
       </TouchableOpacity>
 
-      {/* Delete Account Button */}
+      <Text style={[styles.version, { fontSize: r.fs.xs, marginTop: r.sp.xl }]}>版本 1.0.0</Text>
+
+      {/* Delete Account — low-profile text link, Apple requires it to be findable but not prominent */}
       <TouchableOpacity
-        style={styles.deleteAccountButton}
+        style={[styles.deleteAccountLink, { paddingVertical: r.sp.md, marginBottom: r.sp.xxl }]}
         onPress={handleDeleteAccount}
-        activeOpacity={0.7}
+        activeOpacity={0.5}
       >
-        <Ionicons name="trash-outline" size={20} color={colors.destructive} />
-        <Text style={styles.deleteAccountText}>刪除帳號</Text>
+        <Text style={[styles.deleteAccountText, { fontSize: r.fs.xs }]}>刪除帳號</Text>
       </TouchableOpacity>
-
-      <Text style={styles.version}>版本 1.0.0</Text>
     </ScrollView>
   );
 };
@@ -244,29 +245,22 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.bodyMedium,
     color: colors.primary,
   },
-  deleteAccountButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
-    paddingVertical: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.destructive,
-    borderRadius: 0,
-  },
-  deleteAccountText: {
-    fontSize: typography.fontSize.md,
-    fontFamily: typography.fontFamily.bodyMedium,
-    color: colors.destructive,
-  },
   version: {
     textAlign: 'center',
     fontSize: typography.fontSize.xs,
     fontFamily: typography.fontFamily.body,
     color: colors.mutedForeground,
-    marginTop: spacing.lg,
+    marginTop: spacing.xl,
+  },
+  deleteAccountLink: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
     marginBottom: spacing.xxl,
+  },
+  deleteAccountText: {
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontFamily.chinese,
+    color: colors.mutedForeground,
+    textDecorationLine: 'underline',
   },
 });

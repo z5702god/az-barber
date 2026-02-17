@@ -13,6 +13,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { ProfileStackParamList } from '../../navigation/types';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useResponsive } from '../../hooks/useResponsive';
 import { colors, spacing, typography } from '../../theme';
 
 const SHOP_INFO = {
@@ -31,6 +32,7 @@ const SHOP_INFO = {
 
 export const AboutUsScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
+  const r = useResponsive();
 
   const handleCall = () => {
     Linking.openURL(`tel:${SHOP_INFO.phone.replace(/-/g, '')}`);
@@ -51,14 +53,14 @@ export const AboutUsScreen: React.FC = () => {
     onPress?: () => void;
   }) => {
     const content = (
-      <View style={styles.infoRow}>
-        <Ionicons name={icon as any} size={20} color={colors.primary} />
+      <View style={[styles.infoRow, { padding: r.sp.md, gap: r.sp.md }]}>
+        <Ionicons name={icon as any} size={r.scale(20, 24)} color={colors.primary} />
         <View style={styles.infoContent}>
-          <Text style={styles.infoLabel}>{label}</Text>
-          <Text style={[styles.infoValue, onPress && styles.infoValueLink]}>{value}</Text>
+          <Text style={[styles.infoLabel, { fontSize: r.fs.xs }]}>{label}</Text>
+          <Text style={[styles.infoValue, { fontSize: r.fs.md }, onPress && styles.infoValueLink]}>{value}</Text>
         </View>
         {onPress && (
-          <Ionicons name="open-outline" size={16} color={colors.mutedForeground} />
+          <Ionicons name="open-outline" size={r.scale(16, 20)} color={colors.mutedForeground} />
         )}
       </View>
     );
@@ -78,34 +80,34 @@ export const AboutUsScreen: React.FC = () => {
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       {/* Custom Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingHorizontal: r.sp.md, paddingVertical: r.sp.md }]}>
         <TouchableOpacity
-          style={styles.backButton}
+          style={[styles.backButton, { padding: r.sp.sm }]}
           onPress={() => navigation.goBack()}
           activeOpacity={0.7}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.foreground} />
+          <Ionicons name="arrow-back" size={r.scale(24, 28)} color={colors.foreground} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>關於我們</Text>
+        <Text style={[styles.headerTitle, { fontSize: r.fs.lg }]}>關於我們</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: r.sp.xxl }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Brand Section */}
-        <View style={styles.brandSection}>
-          <Text style={styles.brandName}>{SHOP_INFO.name}</Text>
-          <Text style={styles.brandSubtitle}>{SHOP_INFO.subtitle}</Text>
-          <View style={styles.dividerGold} />
-          <Text style={styles.description}>{SHOP_INFO.description}</Text>
+        <View style={[styles.brandSection, { paddingVertical: r.sp.xl, paddingHorizontal: r.sp.lg }]}>
+          <Text style={[styles.brandName, { fontSize: r.fs.xxl, marginBottom: r.sp.xs }]}>{SHOP_INFO.name}</Text>
+          <Text style={[styles.brandSubtitle, { fontSize: r.fs.sm, marginBottom: r.sp.lg }]}>{SHOP_INFO.subtitle}</Text>
+          <View style={[styles.dividerGold, { marginBottom: r.sp.lg }]} />
+          <Text style={[styles.description, { fontSize: r.fs.md, lineHeight: r.scale(26, 32) }]}>{SHOP_INFO.description}</Text>
         </View>
 
         {/* Contact Info */}
-        <Text style={styles.sectionTitle}>CONTACT</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionTitle, { fontSize: r.fs.xs, marginBottom: r.sp.md, marginTop: r.sp.md, paddingHorizontal: r.sp.lg }]}>CONTACT</Text>
+        <View style={[styles.card, { marginHorizontal: r.sp.lg }]}>
           <InfoRow
             icon="location"
             label="地址"
@@ -129,15 +131,16 @@ export const AboutUsScreen: React.FC = () => {
         </View>
 
         {/* Business Hours */}
-        <Text style={styles.sectionTitle}>HOURS</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionTitle, { fontSize: r.fs.xs, marginBottom: r.sp.md, marginTop: r.sp.md, paddingHorizontal: r.sp.lg }]}>HOURS</Text>
+        <View style={[styles.card, { marginHorizontal: r.sp.lg }]}>
           {SHOP_INFO.hours.map((item, index) => (
             <View key={item.day}>
               {index > 0 && <View style={styles.divider} />}
-              <View style={styles.hoursRow}>
-                <Text style={styles.hoursDay}>{item.day}</Text>
+              <View style={[styles.hoursRow, { padding: r.sp.md }]}>
+                <Text style={[styles.hoursDay, { fontSize: r.fs.md }]}>{item.day}</Text>
                 <Text style={[
                   styles.hoursTime,
+                  { fontSize: r.fs.md },
                   item.time === '公休' && styles.hoursTimeClosed,
                 ]}>
                   {item.time}
@@ -148,37 +151,37 @@ export const AboutUsScreen: React.FC = () => {
         </View>
 
         {/* Legal Links */}
-        <Text style={styles.sectionTitle}>LEGAL</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionTitle, { fontSize: r.fs.xs, marginBottom: r.sp.md, marginTop: r.sp.md, paddingHorizontal: r.sp.lg }]}>LEGAL</Text>
+        <View style={[styles.card, { marginHorizontal: r.sp.lg }]}>
           <TouchableOpacity
-            style={styles.infoRow}
+            style={[styles.infoRow, { padding: r.sp.md, gap: r.sp.md }]}
             onPress={() => navigation.navigate('PrivacyPolicy')}
             activeOpacity={0.7}
           >
-            <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
+            <Ionicons name="shield-checkmark" size={r.scale(20, 24)} color={colors.primary} />
             <View style={styles.infoContent}>
-              <Text style={styles.infoValue}>隱私權政策</Text>
+              <Text style={[styles.infoValue, { fontSize: r.fs.md }]}>隱私權政策</Text>
             </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
+            <Ionicons name="chevron-forward" size={r.scale(16, 20)} color={colors.mutedForeground} />
           </TouchableOpacity>
           <View style={styles.divider} />
           <TouchableOpacity
-            style={styles.infoRow}
+            style={[styles.infoRow, { padding: r.sp.md, gap: r.sp.md }]}
             onPress={() => navigation.navigate('Terms')}
             activeOpacity={0.7}
           >
-            <Ionicons name="document-text" size={20} color={colors.primary} />
+            <Ionicons name="document-text" size={r.scale(20, 24)} color={colors.primary} />
             <View style={styles.infoContent}>
-              <Text style={styles.infoValue}>服務條款</Text>
+              <Text style={[styles.infoValue, { fontSize: r.fs.md }]}>服務條款</Text>
             </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
+            <Ionicons name="chevron-forward" size={r.scale(16, 20)} color={colors.mutedForeground} />
           </TouchableOpacity>
         </View>
 
         {/* App Info */}
-        <View style={styles.appInfo}>
-          <Text style={styles.appVersion}>AZ Barber App v1.0.0</Text>
-          <Text style={styles.appCopyright}>Made with care in Taipei</Text>
+        <View style={[styles.appInfo, { marginTop: r.sp.xl, gap: r.sp.xs }]}>
+          <Text style={[styles.appVersion, { fontSize: r.fs.xs }]}>AZ Barber App v1.0.0</Text>
+          <Text style={[styles.appCopyright, { fontSize: r.fs.xs }]}>Made with care in Taipei</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

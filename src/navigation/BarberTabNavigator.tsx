@@ -10,11 +10,13 @@ import {
   StatsScreen,
 } from '../screens/barber';
 import { BarberProfileStackNavigator } from './BarberProfileStackNavigator';
+import { useResponsive } from '../hooks/useResponsive';
 import { colors, typography } from '../theme';
 
 const Tab = createBottomTabNavigator<BarberTabParamList>();
 
 export const BarberTabNavigator: React.FC = () => {
+  const r = useResponsive();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -41,7 +43,8 @@ export const BarberTabNavigator: React.FC = () => {
               iconName = 'circle';
           }
 
-          return <Icon name={iconName} size={size} color={color} />;
+          const iconSize = r.isTablet ? size * 1.2 : size;
+          return <Icon name={iconName} size={iconSize} color={color} />;
         },
         // Dark theme tab bar styling
         tabBarActiveTintColor: colors.primary,
@@ -53,7 +56,7 @@ export const BarberTabNavigator: React.FC = () => {
         },
         tabBarLabelStyle: {
           fontFamily: typography.fontFamily.secondary,
-          fontSize: 12,
+          fontSize: r.isTablet ? 14 : 12,
         },
         // Dark theme header styling
         headerStyle: {

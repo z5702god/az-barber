@@ -15,11 +15,13 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons';
 import { useAIChat } from '../../hooks/useAIChat';
 import { useBarbers } from '../../hooks/useBarbers';
+import { useResponsive } from '../../hooks/useResponsive';
 import { ChatMessage as ChatMessageType } from '../../types/chat';
 import { colors, spacing, typography } from '../../theme';
 
 // Typing indicator component
 const TypingIndicator: React.FC = () => {
+  const r = useResponsive();
   const [dots, setDots] = useState('');
 
   useEffect(() => {
@@ -30,43 +32,44 @@ const TypingIndicator: React.FC = () => {
   }, []);
 
   return (
-    <View style={styles.typingContainer}>
-      <Text style={styles.typingText}>正在輸入{dots}</Text>
+    <View style={[styles.typingContainer, { paddingVertical: r.sp.xs }]}>
+      <Text style={[styles.typingText, { fontSize: r.fs.sm }]}>正在輸入{dots}</Text>
     </View>
   );
 };
 
 // Booking card component
 const BookingCard: React.FC<{ booking: ChatMessageType['booking'] }> = ({ booking }) => {
+  const r = useResponsive();
   if (!booking) return null;
 
   return (
-    <View style={styles.bookingCard}>
-      <View style={styles.bookingHeader}>
-        <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
-        <Text style={styles.bookingTitle}>預約成功</Text>
+    <View style={[styles.bookingCard, { maxWidth: r.isTablet ? '70%' : '85%', padding: r.sp.md }]}>
+      <View style={[styles.bookingHeader, { marginBottom: r.sp.sm }]}>
+        <Ionicons name="checkmark-circle" size={r.scale(20, 26)} color={colors.primary} />
+        <Text style={[styles.bookingTitle, { fontSize: r.fs.md, marginLeft: r.sp.xs }]}>預約成功</Text>
       </View>
-      <View style={styles.bookingDetails}>
-        <View style={styles.bookingRow}>
-          <Ionicons name="person-outline" size={16} color={colors.mutedForeground} />
-          <Text style={styles.bookingText}>{booking.barber}</Text>
+      <View style={[styles.bookingDetails, { gap: r.sp.xs }]}>
+        <View style={[styles.bookingRow, { gap: r.sp.sm }]}>
+          <Ionicons name="person-outline" size={r.scale(16, 20)} color={colors.mutedForeground} />
+          <Text style={[styles.bookingText, { fontSize: r.fs.sm }]}>{booking.barber}</Text>
         </View>
-        <View style={styles.bookingRow}>
-          <Ionicons name="calendar-outline" size={16} color={colors.mutedForeground} />
-          <Text style={styles.bookingText}>{booking.date}</Text>
+        <View style={[styles.bookingRow, { gap: r.sp.sm }]}>
+          <Ionicons name="calendar-outline" size={r.scale(16, 20)} color={colors.mutedForeground} />
+          <Text style={[styles.bookingText, { fontSize: r.fs.sm }]}>{booking.date}</Text>
         </View>
-        <View style={styles.bookingRow}>
-          <Ionicons name="time-outline" size={16} color={colors.mutedForeground} />
-          <Text style={styles.bookingText}>{booking.time}</Text>
+        <View style={[styles.bookingRow, { gap: r.sp.sm }]}>
+          <Ionicons name="time-outline" size={r.scale(16, 20)} color={colors.mutedForeground} />
+          <Text style={[styles.bookingText, { fontSize: r.fs.sm }]}>{booking.time}</Text>
         </View>
-        <View style={styles.bookingRow}>
-          <Ionicons name="cut-outline" size={16} color={colors.mutedForeground} />
-          <Text style={styles.bookingText}>{booking.services.join(', ')}</Text>
+        <View style={[styles.bookingRow, { gap: r.sp.sm }]}>
+          <Ionicons name="cut-outline" size={r.scale(16, 20)} color={colors.mutedForeground} />
+          <Text style={[styles.bookingText, { fontSize: r.fs.sm }]}>{booking.services.join(', ')}</Text>
         </View>
-        <View style={styles.bookingDivider} />
-        <View style={styles.bookingRow}>
-          <Text style={styles.bookingLabel}>總金額</Text>
-          <Text style={styles.bookingPrice}>{booking.total_price}</Text>
+        <View style={[styles.bookingDivider, { marginVertical: r.sp.sm }]} />
+        <View style={[styles.bookingRow, { gap: r.sp.sm }]}>
+          <Text style={[styles.bookingLabel, { fontSize: r.fs.sm }]}>總金額</Text>
+          <Text style={[styles.bookingPrice, { fontSize: r.fs.md }]}>{booking.total_price}</Text>
         </View>
       </View>
     </View>
@@ -75,25 +78,27 @@ const BookingCard: React.FC<{ booking: ChatMessageType['booking'] }> = ({ bookin
 
 // Message bubble component
 const MessageBubble: React.FC<{ message: ChatMessageType }> = ({ message }) => {
+  const r = useResponsive();
   const isUser = message.role === 'user';
 
   if (message.isLoading) {
     return (
-      <View style={[styles.messageBubble, styles.assistantBubble]}>
+      <View style={[styles.messageBubble, styles.assistantBubble, { maxWidth: r.isTablet ? '70%' : '85%', padding: r.sp.md }]}>
         <TypingIndicator />
       </View>
     );
   }
 
   return (
-    <View style={styles.messageContainer}>
+    <View style={[styles.messageContainer, { marginBottom: r.sp.md }]}>
       <View
         style={[
           styles.messageBubble,
           isUser ? styles.userBubble : styles.assistantBubble,
+          { maxWidth: r.isTablet ? '70%' : '85%', padding: r.sp.md },
         ]}
       >
-        <Text style={[styles.messageText, isUser && styles.userMessageText]}>
+        <Text style={[styles.messageText, isUser && styles.userMessageText, { fontSize: r.fs.md }]}>
           {message.content}
         </Text>
       </View>
@@ -105,6 +110,7 @@ const MessageBubble: React.FC<{ message: ChatMessageType }> = ({ message }) => {
 export const AIChatScreen: React.FC = () => {
   const { messages, isLoading, sendMessage } = useAIChat();
   const { barbers } = useBarbers();
+  const r = useResponsive();
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef<FlatList>(null);
   const insets = useSafeAreaInsets();
@@ -158,11 +164,11 @@ export const AIChatScreen: React.FC = () => {
 
   const renderQuickAction = (text: string) => (
     <TouchableOpacity
-      style={styles.quickAction}
+      style={[styles.quickAction, { paddingVertical: r.sp.sm, paddingHorizontal: r.sp.md }]}
       onPress={() => sendMessage(text)}
       disabled={isLoading}
     >
-      <Text style={styles.quickActionText}>{text}</Text>
+      <Text style={[styles.quickActionText, { fontSize: r.fs.sm }]}>{text}</Text>
     </TouchableOpacity>
   );
 
@@ -171,20 +177,20 @@ export const AIChatScreen: React.FC = () => {
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerIcon}>
-          <Ionicons name="sparkles" size={20} color={colors.primary} />
+      <View style={[styles.header, { paddingHorizontal: r.sp.md, paddingVertical: r.sp.md }]}>
+        <View style={[styles.headerIcon, { width: r.iconSmall, height: r.iconSmall, marginRight: r.sp.md }]}>
+          <Ionicons name="sparkles" size={r.scale(20, 26)} color={colors.primary} />
         </View>
         <View>
-          <Text style={styles.headerTitle}>小安</Text>
-          <Text style={styles.headerSubtitle}>你的預約好夥伴 ✨</Text>
+          <Text style={[styles.headerTitle, { fontSize: r.fs.lg }]}>小安</Text>
+          <Text style={[styles.headerSubtitle, { fontSize: r.fs.xs }]}>你的預約好夥伴 ✨</Text>
         </View>
       </View>
 
       {/* AI Disclosure */}
-      <View style={styles.disclosureBanner}>
-        <Ionicons name="information-circle-outline" size={14} color={colors.mutedForeground} />
-        <Text style={styles.disclosureText}>
+      <View style={[styles.disclosureBanner, { paddingHorizontal: r.sp.lg, paddingVertical: r.sp.sm, gap: r.sp.xs }]}>
+        <Ionicons name="information-circle-outline" size={r.scale(14, 18)} color={colors.mutedForeground} />
+        <Text style={[styles.disclosureText, { fontSize: r.fs.xs }]}>
           此為 AI 助理（由 OpenAI 技術驅動），非真人客服。回覆僅供參考。
         </Text>
       </View>
@@ -198,13 +204,13 @@ export const AIChatScreen: React.FC = () => {
           inverted
           keyExtractor={item => item.id}
           renderItem={({ item }) => <MessageBubble message={item} />}
-          contentContainerStyle={styles.messagesList}
+          contentContainerStyle={[styles.messagesList, { padding: r.sp.md }]}
           showsVerticalScrollIndicator={false}
           keyboardDismissMode="interactive"
           ListHeaderComponent={
             messages.length === 1 && firstBarberName ? (
               <View style={styles.initialSpacer}>
-                <View style={styles.quickActions}>
+                <View style={[styles.quickActions, { gap: r.sp.sm, marginTop: r.sp.md }]}>
                   {renderQuickAction(`${firstBarberName} 明天有空嗎？`)}
                   {renderQuickAction('有哪些服務？')}
                   {renderQuickAction('洗剪多少錢？')}
@@ -215,9 +221,9 @@ export const AIChatScreen: React.FC = () => {
         />
 
         {/* Input */}
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, { padding: r.sp.md, gap: r.sp.sm }]}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { paddingHorizontal: r.sp.md, paddingVertical: r.sp.sm, fontSize: r.fs.md, maxHeight: r.isTablet ? 140 : 100 }]}
             value={inputText}
             onChangeText={setInputText}
             placeholder="輸入訊息..."
@@ -231,6 +237,7 @@ export const AIChatScreen: React.FC = () => {
           <TouchableOpacity
             style={[
               styles.sendButton,
+              { width: r.isTablet ? 56 : 44, height: r.isTablet ? 56 : 44 },
               (!inputText.trim() || isLoading) && styles.sendButtonDisabled,
             ]}
             onPress={handleSend}
@@ -238,7 +245,7 @@ export const AIChatScreen: React.FC = () => {
           >
             <Ionicons
               name="send"
-              size={20}
+              size={r.scale(20, 26)}
               color={
                 !inputText.trim() || isLoading
                   ? colors.mutedForeground

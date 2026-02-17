@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as SplashScreen from 'expo-splash-screen';
 
 import { useAuth } from '../hooks/useAuth';
+import { useResponsive } from '../hooks/useResponsive';
 import { RootStackParamList, MainTabParamList } from './types';
 import { colors, typography } from '../theme';
 
@@ -28,6 +29,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 const CustomerTabNavigator: React.FC = () => {
+  const r = useResponsive();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -51,7 +53,8 @@ const CustomerTabNavigator: React.FC = () => {
               iconName = 'circle';
           }
 
-          return <Icon name={iconName} size={size} color={color} />;
+          const iconSize = r.isTablet ? size * 1.2 : size;
+          return <Icon name={iconName} size={iconSize} color={color} />;
         },
         // Dark theme tab bar styling
         tabBarActiveTintColor: colors.primary,
@@ -64,7 +67,7 @@ const CustomerTabNavigator: React.FC = () => {
         tabBarHideOnKeyboard: true,
         tabBarLabelStyle: {
           fontFamily: typography.fontFamily.secondary,
-          fontSize: 12,
+          fontSize: r.isTablet ? 14 : 12,
         },
         // Dark theme header styling
         headerStyle: {
