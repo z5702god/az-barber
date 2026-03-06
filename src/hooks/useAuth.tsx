@@ -34,6 +34,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Safety timeout: force loading to false if auth takes too long (5 seconds)
+    const safetyTimeout = setTimeout(() => {
+      setLoading((prev) => {
+        if (prev) {
+          console.warn('Auth loading timeout - forcing app to continue');
+        }
+        return false;
+      });
+    }, 5000);
+
     // Get current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -42,6 +52,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         setLoading(false);
       }
+    }).catch(() => {
+      // Network error or Supabase unreachable - proceed without session
+      setLoading(false);
     });
 
     // Listen for auth state changes
@@ -57,7 +70,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchUserProfile = async (userId: string) => {

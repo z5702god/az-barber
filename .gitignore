@@ -28,7 +28,14 @@ yarn-error.*
 
 # macOS
 .DS_Store
+
+# keys & secrets
 *.pem
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.jks
 
 # local env files
 .env
@@ -44,5 +51,14 @@ yarn-error.*
 # Claude Code
 .claude/
 
+# IDE
+.vscode/
+
 # Supabase temp
 supabase/.temp/
+
+# Cloudflare
+.wrangler/
+
+# Screenshots & store assets (keep locally, not in repo)
+/screenshots/

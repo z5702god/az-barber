@@ -111,14 +111,10 @@ const CustomerTabNavigator: React.FC = () => {
 export const AppNavigator: React.FC = () => {
   const { session, user, loading } = useAuth();
 
-  // Hide splash screen once auth state is resolved
-  // Uses onReady callback for NavigationContainer to ensure
-  // the first meaningful frame is fully rendered before hiding
+  // Hide splash screen once navigation is ready
   const onNavigationReady = useCallback(() => {
-    if (!loading) {
-      SplashScreen.hideAsync();
-    }
-  }, [loading]);
+    SplashScreen.hideAsync();
+  }, []);
 
   // Return null while loading — native splash screen stays visible
   if (loading) {

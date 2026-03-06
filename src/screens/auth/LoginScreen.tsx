@@ -45,15 +45,17 @@ try {
   // Google Sign-In not available (e.g. Expo Go)
 }
 
-// Barber shop images from Unsplash (same as Pencil design)
+// Shop photos (local assets)
 const BARBER_IMAGES = [
-  'https://images.unsplash.com/photo-1617655719462-c643bc54914c?w=400&q=80',
-  'https://images.unsplash.com/photo-1693591936914-14645081663a?w=400&q=80',
-  'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&q=80',
-  'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&q=80',
-  'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=400&q=80',
-  'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400&q=80',
+  require('../../../assets/shop/shop1.jpg'),
+  require('../../../assets/shop/shop2.jpg'),
+  require('../../../assets/shop/shop3.jpg'),
+  require('../../../assets/shop/shop4.jpg'),
+  require('../../../assets/shop/shop5.jpg'),
+  require('../../../assets/shop/shop6.jpg'),
 ];
+
+const LOGO_IMAGE = require('../../../assets/shop/logo.jpg');
 
 export const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -215,30 +217,30 @@ export const LoginScreen: React.FC = () => {
       <View style={styles.collageContainer}>
         {/* Row 1 */}
         <View style={[styles.imageRow, { gap, transform: [{ rotate: `${rotation}deg` }], top: -20, left: r.isTablet ? -80 : -50 }]}>
-          {BARBER_IMAGES.slice(0, 3).map((uri, index) => (
+          {BARBER_IMAGES.slice(0, 3).map((src, index) => (
             <Image
               key={`row1-${index}`}
-              source={{ uri }}
+              source={src}
               style={[styles.collageImage, { width: imageSize, height: imgHeight }]}
             />
           ))}
         </View>
         {/* Row 2 */}
         <View style={[styles.imageRow, { gap, transform: [{ rotate: `${rotation}deg` }], top: r.isTablet ? 340 : 210, left: r.isTablet ? -150 : -100 }]}>
-          {BARBER_IMAGES.slice(3, 6).map((uri, index) => (
+          {BARBER_IMAGES.slice(3, 6).map((src, index) => (
             <Image
               key={`row2-${index}`}
-              source={{ uri }}
+              source={src}
               style={[styles.collageImage, { width: imageSize, height: imgHeight }]}
             />
           ))}
         </View>
         {/* Row 3 */}
         <View style={[styles.imageRow, { gap, transform: [{ rotate: `${rotation}deg` }], top: r.isTablet ? 700 : 440, left: r.isTablet ? -80 : -50 }]}>
-          {BARBER_IMAGES.slice(0, 3).map((uri, index) => (
+          {BARBER_IMAGES.slice(0, 3).map((src, index) => (
             <Image
               key={`row3-${index}`}
-              source={{ uri }}
+              source={src}
               style={[styles.collageImage, { width: imageSize, height: imgHeight }]}
             />
           ))}
@@ -279,7 +281,11 @@ export const LoginScreen: React.FC = () => {
         >
           {/* Logo Section */}
           <View style={styles.logoContainer}>
-            <Text style={[styles.brandName, r.isTablet && { fontSize: 52 }]}>AZ BARBERSHOP</Text>
+            <Image
+              source={LOGO_IMAGE}
+              style={[styles.logoImage, r.isTablet && { width: 200, height: 160 }]}
+              resizeMode="contain"
+            />
             <Text style={[styles.tagline, { fontSize: r.fs.sm }]}>專業髮型設計</Text>
           </View>
 
@@ -445,11 +451,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 32,
   },
-  brandName: {
-    fontSize: 38,
-    fontFamily: typography.fontFamily.display,
-    color: colors.primary,
-    letterSpacing: 2,
+  logoImage: {
+    width: 160,
+    height: 128,
     marginBottom: spacing.sm,
   },
   tagline: {
