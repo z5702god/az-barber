@@ -10,7 +10,7 @@ export function useAIChat() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: '你好！我是 AZ Barber 的預約助理 👋\n\n你可以問我：\n• 理髮師的空檔時段\n• 服務項目和價格\n• 或直接說「幫我預約」\n\n有什麼可以幫你的嗎？',
+      content: '你好！我是 omexa barber 的預約助理 👋\n\n你可以問我：\n• 理髮師的空檔時段\n• 服務項目和價格\n• 或直接說「幫我預約」\n\n有什麼可以幫你的嗎？',
       timestamp: new Date(),
     },
   ]);
@@ -121,7 +121,7 @@ export function useAIChat() {
       {
         id: 'welcome',
         role: 'assistant',
-        content: '你好！我是 AZ Barber 的預約助理 👋\n\n你可以問我：\n• 理髮師的空檔時段\n• 服務項目和價格\n• 或直接說「幫我預約」\n\n有什麼可以幫你的嗎？',
+        content: '你好！我是 omexa barber 的預約助理 👋\n\n你可以問我：\n• 理髮師的空檔時段\n• 服務項目和價格\n• 或直接說「幫我預約」\n\n有什麼可以幫你的嗎？',
         timestamp: new Date(),
       },
     ]);

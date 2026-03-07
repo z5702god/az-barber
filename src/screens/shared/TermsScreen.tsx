@@ -42,7 +42,7 @@ export const TermsScreen: React.FC = () => {
 
         <Text style={[styles.sectionTitle, { fontSize: r.fs.md, marginTop: r.sp.lg, marginBottom: r.sp.sm }]}>1. 服務說明</Text>
         <Text style={[styles.bodyText, { fontSize: r.fs.sm, lineHeight: r.scale(22, 28) }]}>
-          AZ Barber App（以下簡稱「本 App」）由 AZ Barber Shop 提供，用於線上預約理髮服務。使用本 App 即表示您同意遵守以下條款。
+          omexa barber App（以下簡稱「本 App」）由 omexa barber 提供，用於線上預約理髮服務。使用本 App 即表示您同意遵守以下條款。
         </Text>
 
         <Text style={[styles.sectionTitle, { fontSize: r.fs.md, marginTop: r.sp.lg, marginBottom: r.sp.sm }]}>2. 帳號註冊</Text>
@@ -80,7 +80,7 @@ export const TermsScreen: React.FC = () => {
 
         <Text style={[styles.sectionTitle, { fontSize: r.fs.md, marginTop: r.sp.lg, marginBottom: r.sp.sm }]}>6. 智慧財產權</Text>
         <Text style={[styles.bodyText, { fontSize: r.fs.sm, lineHeight: r.scale(22, 28) }]}>
-          本 App 的所有內容，包括但不限於文字、圖片、介面設計、商標等，均為 AZ Barber Shop 或其授權方所有，受著作權法保護。
+          本 App 的所有內容，包括但不限於文字、圖片、介面設計、商標等，均為 omexa barber 或其授權方所有，受著作權法保護。
         </Text>
 
         <Text style={[styles.sectionTitle, { fontSize: r.fs.md, marginTop: r.sp.lg, marginBottom: r.sp.sm }]}>7. 免責聲明</Text>

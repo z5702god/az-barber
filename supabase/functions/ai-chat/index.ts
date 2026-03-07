@@ -1,5 +1,5 @@
 // AI Chat Edge Function - OpenAI GPT-4
-// Handles natural language booking queries for AZ Barber app
+// Handles natural language booking queries for omexa barber app
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0'
@@ -100,7 +100,7 @@ function getSystemPrompt(): string {
     upcoming.push(`${label} = ${formatDate(d)}（週${weekdays[d.getDay()]}）`)
   }
 
-  return `你是 AZ Barber 理髮店的預約小幫手，叫小安。像朋友聊天一樣跟客人說話，不要太正式。
+  return `你是 omexa barber 理髮店的預約小幫手，叫小安。像朋友聊天一樣跟客人說話，不要太正式。
 
 【最高優先規則 - 必須用工具查詢】
 你對店裡的任何資訊一無所知！所有關於設計師、時段、服務、價格、休假的問題，你都必須先用工具查詢資料庫，絕對不可以憑記憶或猜測回答。

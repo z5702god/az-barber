@@ -55,7 +55,7 @@ const BARBER_IMAGES = [
   require('../../../assets/shop/shop6.jpg'),
 ];
 
-const LOGO_IMAGE = require('../../../assets/shop/logo.jpg');
+const LOGO_IMAGE = require('../../../assets/shop/logo.png');
 
 export const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -259,13 +259,13 @@ export const LoginScreen: React.FC = () => {
       {/* Gradient Overlay */}
       <LinearGradient
         colors={[
-          'rgba(17, 17, 17, 0)',
-          'rgba(17, 17, 17, 0.25)',
+          'rgba(17, 17, 17, 0.3)',
           'rgba(17, 17, 17, 0.5)',
           'rgba(17, 17, 17, 0.7)',
           'rgba(17, 17, 17, 0.85)',
+          'rgba(17, 17, 17, 0.95)',
         ]}
-        locations={[0, 0.3, 0.5, 0.75, 1]}
+        locations={[0, 0.2, 0.45, 0.7, 1]}
         style={styles.overlay}
       />
 
@@ -452,8 +452,8 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   logoImage: {
-    width: 160,
-    height: 128,
+    width: 200,
+    height: 160,
     marginBottom: spacing.sm,
   },
   tagline: {
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.chinese,
     color: colors.mutedForeground,
     letterSpacing: 1,
-    opacity: 0.7,
+    opacity: 0.9,
   },
   bottomSection: {
     width: '100%',

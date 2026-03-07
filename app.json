@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "AZ Barber",
+    "name": "omexa barber",
     "slug": "az-barber-app",
     "scheme": "az-barber-app",
     "version": "1.0.2",
@@ -19,7 +19,7 @@
       "usesAppleSignIn": true,
       "privacyPolicyUrl": "https://z5702god.github.io/az-barber/privacy.html",
       "infoPlist": {
-        "CFBundleDisplayName": "AZ Barber",
+        "CFBundleDisplayName": "omexa barber",
         "ITSAppUsesNonExemptEncryption": false
       }
     },

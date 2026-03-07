@@ -1,5 +1,5 @@
 /**
- * AZ Barber Theme - 基於 Pencil 設計風格
+ * omexa barber Theme - 基於 Pencil 設計風格
  * 深色主題配金色強調色
  */
 

@@ -139,7 +139,7 @@ export const HomeScreen: React.FC = () => {
               locations={[0, 0.4, 1]}
               style={styles.featuredGradient}
             >
-              <Text style={[styles.featuredTitle, { fontSize: r.fs.xl }]}>AZ Barbershop</Text>
+              <Text style={[styles.featuredTitle, { fontSize: r.fs.xl }]}>omexa barber</Text>
               <View style={styles.ratingContainer}>
                 <Ionicons name="location" size={r.isTablet ? 18 : 14} color={colors.mutedForeground} />
                 <Text style={[styles.ratingLocation, { fontSize: r.fs.sm }]}>台北市中山區民權西路9巷22號</Text>

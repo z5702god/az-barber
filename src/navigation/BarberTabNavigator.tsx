@@ -73,7 +73,7 @@ export const BarberTabNavigator: React.FC = () => {
       <Tab.Screen
         name="BarberHome"
         component={BarberHomeScreen}
-        options={{ title: '首頁', headerTitle: 'AZ Barber' }}
+        options={{ title: '首頁', headerTitle: 'omexa barber' }}
       />
       <Tab.Screen
         name="BookingCalendar"

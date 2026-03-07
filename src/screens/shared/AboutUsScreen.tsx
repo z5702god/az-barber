@@ -17,7 +17,7 @@ import { useResponsive } from '../../hooks/useResponsive';
 import { colors, spacing, typography } from '../../theme';
 
 const SHOP_INFO = {
-  name: 'AZ BARBER SHOP',
+  name: 'OMEXA BARBER',
   subtitle: 'Men\'s Grooming Since 2019',
   description: '突破從前美髮的文化和概念，在各領域當中皆有一直的創新和精進。我們提供男士理髮、油頭造型、修容等專業服務，讓您的整體造型更加精神朝氣。',
   address: '台北市大同區民權西路 9 巷 22 號 1 樓',
@@ -180,7 +180,7 @@ export const AboutUsScreen: React.FC = () => {
 
         {/* App Info */}
         <View style={[styles.appInfo, { marginTop: r.sp.xl, gap: r.sp.xs }]}>
-          <Text style={[styles.appVersion, { fontSize: r.fs.xs }]}>AZ Barber App v1.0.0</Text>
+          <Text style={[styles.appVersion, { fontSize: r.fs.xs }]}>omexa barber v1.0.2</Text>
           <Text style={[styles.appCopyright, { fontSize: r.fs.xs }]}>Made with care in Taipei</Text>
         </View>
       </ScrollView>

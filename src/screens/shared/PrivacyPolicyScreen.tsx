@@ -42,7 +42,7 @@ export const PrivacyPolicyScreen: React.FC = () => {
 
         <Text style={[styles.sectionTitle, { fontSize: r.fs.md, marginTop: r.sp.lg, marginBottom: r.sp.sm }]}>1. 資料蒐集</Text>
         <Text style={[styles.bodyText, { fontSize: r.fs.sm, lineHeight: r.scale(22, 28) }]}>
-          AZ Barber App（以下簡稱「本 App」）在您使用服務時，可能蒐集以下個人資料：
+          omexa barber App（以下簡稱「本 App」）在您使用服務時，可能蒐集以下個人資料：
           {'\n\n'}• 帳號資料：電子郵件地址、姓名、電話號碼
           {'\n'}• 第三方登入資料：透過 Apple、Google 或 LINE 登入時，取得您的公開個人資料
           {'\n'}• 預約紀錄：您的預約時間、選擇的服務項目

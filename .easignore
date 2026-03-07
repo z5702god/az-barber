@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Native build directories
+/ios
+/android
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# IDE & tools
+.vscode/
+.claude/
+
+# Git
+.git/
+
+# macOS
+.DS_Store
+
+# Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Secrets
+*.pem
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.jks
+.env
+.env*.local
+
+# Build artifacts
+*.tsbuildinfo
+
+# Supabase temp
+supabase/.temp/
+
+# Screenshots
+/screenshots/
+
+# Old assets
+assets/*_old.*
