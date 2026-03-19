@@ -21,13 +21,13 @@ import { colors, spacing, typography } from '../../theme';
 import { BarberCardSkeleton } from '../../components/Skeleton';
 import { useResponsive } from '../../hooks/useResponsive';
 
-// Shop background image
-const SHOP_IMAGE = 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800&q=80';
+// Shop background image (local asset for instant loading)
+const SHOP_IMAGE = require('../../../assets/shop/shop1.jpg');
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
   const { user } = useAuth();
-  const { barbers, loading: barbersLoading } = useBarbers();
+  const { barbers, loading: barbersLoading, error: barbersError, refetch: refetchBarbers } = useBarbers();
   const insets = useSafeAreaInsets();
   const r = useResponsive();
   const [popularServices, setPopularServices] = useState<Service[]>([]);
@@ -130,7 +130,7 @@ export const HomeScreen: React.FC = () => {
           onPress={() => barbers.length > 0 && handleBooking(barbers[0].id)}
         >
           <ImageBackground
-            source={{ uri: SHOP_IMAGE }}
+            source={SHOP_IMAGE}
             style={styles.featuredImage}
             imageStyle={styles.featuredImageStyle}
           >
@@ -173,6 +173,11 @@ export const HomeScreen: React.FC = () => {
               <BarberCardSkeleton />
               <BarberCardSkeleton />
             </View>
+          ) : barbersError ? (
+            <TouchableOpacity style={styles.emptyContainer} onPress={refetchBarbers} activeOpacity={0.7}>
+              <Ionicons name="refresh-outline" size={r.isTablet ? 32 : 28} color={colors.mutedForeground} />
+              <Text style={[styles.emptyText, { fontSize: r.fs.sm, marginTop: r.sp.sm }]}>載入失敗，點擊重試</Text>
+            </TouchableOpacity>
           ) : barbers.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={[styles.emptyText, { fontSize: r.fs.sm }]}>目前沒有可預約的設計師</Text>

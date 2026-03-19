@@ -12,20 +12,21 @@ import {
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Calendar, DateData } from 'react-native-calendars';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { NativeStackScreenProps, NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { useResponsive } from '../../hooks/useResponsive';
 import { useBarberBookings, useBarberMonthlyBookingDates, useUpdateBookingStatus } from '../../hooks/useBarberData';
-import { BarberTabParamList } from '../../navigation/types';
+import { BarberTabParamList, RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 import { Booking } from '../../types';
 
 type Props = NativeStackScreenProps<BarberTabParamList, 'BookingCalendar'>;
 
-export const BookingCalendarScreen: React.FC<Props> = () => {
+export const BookingCalendarScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth();
   const r = useResponsive();
+  const rootNavigation = navigation.getParent<NativeStackNavigationProp<RootStackParamList>>();
   // 使用 barber_id（barbers 表的 ID），而非 user.id（users 表的 ID）
   const barberId = user?.barber_id || '';
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -171,8 +172,9 @@ export const BookingCalendarScreen: React.FC<Props> = () => {
           </View>
         ) : (
           bookings.map((booking) => {
-            // 優先顯示 name，若無則用 email 或 phone
+            const isWalkIn = !booking.customer_id;
             const customerDisplayName = booking.customer?.name?.trim()
+              || booking.walk_in_name
               || booking.customer?.email?.split('@')[0]
               || booking.customer?.phone
               || '顧客';
@@ -194,6 +196,11 @@ export const BookingCalendarScreen: React.FC<Props> = () => {
                 <Text style={[styles.customerName, { fontSize: r.fs.lg }]}>
                   {customerDisplayName}
                 </Text>
+                {isWalkIn && (
+                  <View style={styles.walkInBadge}>
+                    <Text style={styles.walkInBadgeText}>現場客</Text>
+                  </View>
+                )}
                 {booking.customer_note && (
                   <Ionicons name="chatbubble" size={r.isTablet ? 16 : 14} color={colors.primary} />
                 )}
@@ -252,6 +259,7 @@ export const BookingCalendarScreen: React.FC<Props> = () => {
               <View style={[styles.modalBookingInfo, { padding: r.sp.md, marginBottom: r.sp.md, gap: r.sp.xs }]}>
                 <Text style={[styles.modalBookingText, { fontSize: r.fs.sm }]}>
                   顧客：{selectedBooking.customer?.name?.trim()
+                    || selectedBooking.walk_in_name
                     || selectedBooking.customer?.email?.split('@')[0]
                     || selectedBooking.customer?.phone
                     || '顧客'}
@@ -300,6 +308,17 @@ export const BookingCalendarScreen: React.FC<Props> = () => {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* FAB - 新增預約 */}
+      {barberId ? (
+        <TouchableOpacity
+          style={[styles.fab, { bottom: r.sp.xl, right: r.sp.lg }]}
+          onPress={() => rootNavigation?.navigate('BarberAddBooking', { barberId, preselectedDate: selectedDate })}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="add" size={28} color={colors.primaryForeground} />
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 };
@@ -525,5 +544,28 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     fontFamily: typography.fontFamily.secondaryMedium,
     color: colors.primaryForeground,
+  },
+  walkInBadge: {
+    backgroundColor: 'rgba(201, 169, 110, 0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  walkInBadgeText: {
+    fontSize: 10,
+    fontFamily: typography.fontFamily.chineseMedium,
+    color: colors.primary,
+  },
+  fab: {
+    position: 'absolute',
+    width: 56,
+    height: 56,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
 });

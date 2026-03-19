@@ -66,7 +66,7 @@ export type BookingStatus = 'confirmed' | 'cancelled' | 'completed';
 // Booking
 export interface Booking {
   id: string;
-  customer_id: string;
+  customer_id: string | null; // nullable for walk-in bookings
   barber_id: string;
   booking_date: string; // YYYY-MM-DD
   start_time: string; // HH:mm
@@ -84,6 +84,10 @@ export interface Booking {
   // 取消相關
   cancellation_reason?: string;
   cancelled_by?: 'customer' | 'barber';
+  // Walk-in 現場客
+  walk_in_name?: string;
+  walk_in_phone?: string;
+  created_by?: string;
 }
 
 // Booking service (many-to-many relation)

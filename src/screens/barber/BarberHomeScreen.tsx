@@ -173,7 +173,9 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
         ) : (
           upcomingBookings.map((booking) => {
             // 優先顯示 name，若無則用 email 或 phone
+            const isWalkIn = !booking.customer_id;
             const customerDisplayName = booking.customer?.name?.trim()
+              || booking.walk_in_name
               || booking.customer?.email?.split('@')[0]
               || booking.customer?.phone
               || '顧客';
@@ -186,6 +188,11 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
                 <View style={styles.bookingInfo}>
                   <View style={[styles.customerNameRow, { gap: r.sp.xs }]}>
                     <Text style={[styles.customerName, { fontSize: r.fs.md }]}>{customerDisplayName}</Text>
+                    {isWalkIn && (
+                      <View style={styles.walkInBadge}>
+                        <Text style={styles.walkInBadgeText}>現場客</Text>
+                      </View>
+                    )}
                     {booking.customer_note && (
                       <Ionicons name="chatbubble" size={r.isTablet ? 16 : 14} color={colors.primary} />
                     )}
@@ -239,6 +246,7 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
               <View style={[styles.modalBookingInfo, { padding: r.sp.md, marginBottom: r.sp.md, gap: r.sp.xs }]}>
                 <Text style={[styles.modalBookingText, { fontSize: r.fs.sm }]}>
                   顧客：{selectedBooking.customer?.name?.trim()
+                    || selectedBooking.walk_in_name
                     || selectedBooking.customer?.email?.split('@')[0]
                     || selectedBooking.customer?.phone
                     || '顧客'}
@@ -287,6 +295,17 @@ export const BarberHomeScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* FAB - 新增預約 */}
+      {barberId ? (
+        <TouchableOpacity
+          style={[styles.fab, { bottom: r.sp.xl, right: r.sp.lg }]}
+          onPress={() => rootNavigation?.navigate('BarberAddBooking', { barberId })}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="add" size={28} color={colors.primaryForeground} />
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 };
@@ -570,5 +589,28 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     fontFamily: typography.fontFamily.chineseMedium,
     color: colors.primaryForeground,
+  },
+  walkInBadge: {
+    backgroundColor: 'rgba(201, 169, 110, 0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  walkInBadgeText: {
+    fontSize: 10,
+    fontFamily: typography.fontFamily.chineseMedium,
+    color: colors.primary,
+  },
+  fab: {
+    position: 'absolute',
+    width: 56,
+    height: 56,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
 });

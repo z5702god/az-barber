@@ -17,7 +17,7 @@ export function useBarberBookings(barberId: string, date: string) {
       const { data, error: fetchError } = await supabase
         .from('bookings')
         .select(`
-          *,
+          id, customer_id, barber_id, booking_date, start_time, end_time, total_duration, total_price, status, created_at, customer_note, note_updated_at, cancellation_reason, cancelled_by, walk_in_name, walk_in_phone, created_by,
           customer:users!bookings_customer_id_fkey(id, name, email, phone),
           services:booking_services(service:services(*))
         `)

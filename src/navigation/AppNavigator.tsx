@@ -22,6 +22,7 @@ import { MyBookingsScreen } from '../screens/customer/MyBookingsScreen';
 import { BookingDetailScreen } from '../screens/customer/BookingDetailScreen';
 import { AIChatScreen } from '../screens/customer/AIChatScreen';
 import { NotificationsScreen } from '../screens/customer/NotificationsScreen';
+import { BarberAddBookingScreen } from '../screens/barber/BarberAddBookingScreen';
 import { PrivacyPolicyScreen } from '../screens/shared/PrivacyPolicyScreen';
 import { TermsScreen } from '../screens/shared/TermsScreen';
 
@@ -168,6 +169,11 @@ export const AppNavigator: React.FC = () => {
               name="Notifications"
               component={NotificationsScreen}
               options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="BarberAddBooking"
+              component={BarberAddBookingScreen}
+              options={{ headerShown: false, presentation: 'modal' }}
             />
           </>
         ) : (
