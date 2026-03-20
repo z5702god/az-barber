@@ -356,46 +356,52 @@ export const BookingDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={[styles.modalOverlay, { padding: r.sp.lg }]}
+          style={styles.modalKeyboardView}
         >
-          <View style={[styles.modal, { padding: r.sp.lg, maxWidth: r.modalMaxWidth, alignSelf: 'center', width: '100%' }]}>
-            <Text style={[styles.modalTitle, { fontSize: r.fs.lg, marginBottom: r.sp.xs }]}>編輯備註</Text>
-            <Text style={[styles.modalSubtitle, { fontSize: r.fs.sm, marginBottom: r.sp.md }]}>
-              告訴理髮師您的需求或狀況（例如：會晚到、髮型偏好等）
-            </Text>
+          <ScrollView
+            contentContainerStyle={[styles.modalScrollContent, { padding: r.sp.lg }]}
+            keyboardShouldPersistTaps="handled"
+            bounces={false}
+          >
+            <View style={[styles.modal, { padding: r.sp.lg, maxWidth: r.modalMaxWidth, alignSelf: 'center', width: '100%' }]}>
+              <Text style={[styles.modalTitle, { fontSize: r.fs.lg, marginBottom: r.sp.xs }]}>編輯備註</Text>
+              <Text style={[styles.modalSubtitle, { fontSize: r.fs.sm, marginBottom: r.sp.md }]}>
+                告訴理髮師您的需求或狀況（例如：會晚到、髮型偏好等）
+              </Text>
 
-            <TextInput
-              style={[styles.noteInput, { padding: r.sp.md, fontSize: r.fs.md, minHeight: r.scale(120, 150) }]}
-              value={noteText}
-              onChangeText={setNoteText}
-              placeholder="輸入備註..."
-              placeholderTextColor={colors.mutedForeground}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-              maxLength={200}
-            />
+              <TextInput
+                style={[styles.noteInput, { padding: r.sp.md, fontSize: r.fs.md, minHeight: r.scale(120, 150) }]}
+                value={noteText}
+                onChangeText={setNoteText}
+                placeholder="輸入備註..."
+                placeholderTextColor={colors.mutedForeground}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+                maxLength={200}
+              />
 
-            <Text style={[styles.charCount, { fontSize: r.fs.xs, marginTop: r.sp.xs, marginBottom: r.sp.md }]}>{noteText.length}/200</Text>
+              <Text style={[styles.charCount, { fontSize: r.fs.xs, marginTop: r.sp.xs, marginBottom: r.sp.md }]}>{noteText.length}/200</Text>
 
-            <View style={[styles.modalButtonRow, { gap: r.sp.sm }]}>
-              <TouchableOpacity
-                style={[styles.modalCancelButton, { paddingVertical: r.sp.sm }]}
-                onPress={() => setNoteModalVisible(false)}
-              >
-                <Text style={[styles.modalCancelButtonText, { fontSize: r.fs.sm }]}>取消</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalSaveButton, { paddingVertical: r.sp.sm }]}
-                onPress={handleSaveNote}
-                disabled={savingNote}
-              >
-                <Text style={[styles.modalSaveButtonText, { fontSize: r.fs.sm }]}>
-                  {savingNote ? '儲存中...' : '儲存'}
-                </Text>
-              </TouchableOpacity>
+              <View style={[styles.modalButtonRow, { gap: r.sp.sm }]}>
+                <TouchableOpacity
+                  style={[styles.modalCancelButton, { paddingVertical: r.sp.sm }]}
+                  onPress={() => setNoteModalVisible(false)}
+                >
+                  <Text style={[styles.modalCancelButtonText, { fontSize: r.fs.sm }]}>取消</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalSaveButton, { paddingVertical: r.sp.sm }]}
+                  onPress={handleSaveNote}
+                  disabled={savingNote}
+                >
+                  <Text style={[styles.modalSaveButtonText, { fontSize: r.fs.sm }]}>
+                    {savingNote ? '儲存中...' : '儲存'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
@@ -656,11 +662,13 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   // Modal styles
-  modalOverlay: {
+  modalKeyboardView: {
     flex: 1,
     backgroundColor: colors.overlay,
+  },
+  modalScrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
-    padding: spacing.lg,
   },
   modal: {
     backgroundColor: colors.card,

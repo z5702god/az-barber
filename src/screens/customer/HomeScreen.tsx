@@ -14,11 +14,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/useAuth';
 import { useBarbers } from '../../hooks/useBarbers';
+import { useCustomerStats } from '../../hooks/useCustomerStats';
 import { useNotificationContext } from '../../providers/NotificationProvider';
 import { supabase } from '../../services/supabase';
 import { Service } from '../../types';
 import { colors, spacing, typography } from '../../theme';
 import { BarberCardSkeleton } from '../../components/Skeleton';
+import { PersonalizedCard } from '../../components/PersonalizedCard';
 import { useResponsive } from '../../hooks/useResponsive';
 
 // Shop background image (local asset for instant loading)
@@ -28,6 +30,7 @@ export const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
   const { user } = useAuth();
   const { barbers, loading: barbersLoading, error: barbersError, refetch: refetchBarbers } = useBarbers();
+  const customerStats = useCustomerStats();
   const insets = useSafeAreaInsets();
   const r = useResponsive();
   const [popularServices, setPopularServices] = useState<Service[]>([]);
@@ -64,10 +67,17 @@ export const HomeScreen: React.FC = () => {
   };
 
   const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return '早安';
-    if (hour < 18) return '午安';
-    return '晚安';
+    switch (customerStats.state) {
+      case 'long_absence': return '好久不見';
+      case 'upcoming': return '歡迎回來';
+      case 'just_completed': return '感謝光臨';
+      default: {
+        const hour = new Date().getHours();
+        if (hour < 12) return '早安';
+        if (hour < 18) return '午安';
+        return '晚安';
+      }
+    }
   };
 
   const isShopOpen = () => {
@@ -103,7 +113,7 @@ export const HomeScreen: React.FC = () => {
         <View style={[styles.header, { paddingHorizontal: r.sp.lg, paddingBottom: r.sp.md }]}>
           <View>
             <Text style={[styles.greeting, { fontSize: r.fs.sm }]}>{getGreeting()}</Text>
-            <Text style={[styles.welcomeText, { fontSize: r.fs.xl }]}>歡迎回來，{getUserName()}</Text>
+            <Text style={[styles.welcomeText, { fontSize: r.fs.xl }]}>{getUserName()}</Text>
           </View>
           <TouchableOpacity
             style={[styles.notificationButton, { width: r.iconSize, height: r.iconSize }]}
@@ -122,6 +132,9 @@ export const HomeScreen: React.FC = () => {
             )}
           </TouchableOpacity>
         </View>
+
+        {/* Personalized Card */}
+        <PersonalizedCard stats={customerStats} />
 
         {/* Featured Shop Card */}
         <TouchableOpacity
@@ -246,7 +259,7 @@ export const HomeScreen: React.FC = () => {
           <View style={[styles.sectionHeader, { marginBottom: r.sp.md }]}>
             <Text style={[styles.sectionTitle, { fontSize: r.fs.xs }]}>營業時間</Text>
             <View style={[styles.openBadge, {
-              backgroundColor: isShopOpen() ? 'rgba(76, 175, 80, 0.15)' : 'rgba(255, 92, 51, 0.15)',
+              backgroundColor: isShopOpen() ? colors.successLight : colors.destructiveLight,
             }]}>
               <View style={[styles.openDot, {
                 backgroundColor: isShopOpen() ? colors.success : colors.destructive,
@@ -394,7 +407,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 0,
-    backgroundColor: 'rgba(201, 169, 110, 0.15)',
+    backgroundColor: colors.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.md,

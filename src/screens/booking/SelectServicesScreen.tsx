@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
-  Alert,
   LayoutAnimation,
   UIManager,
   Platform,
@@ -24,10 +23,10 @@ type Props = NativeStackScreenProps<BookingStackParamList, 'SelectServices'>;
 
 // Service categories for grouping
 const SERVICE_CATEGORIES: { [key: string]: string[] } = {
-  '剪髮': ['洗剪', '單剪'],
+  '剪髮': ['洗剪', '洗剪+護髮（基礎）', '洗剪+護髮（標準）', '洗剪+護髮（深層）'],
   '燙髮': ['單燙髮（肩上）', '單燙髮（耳下）'],
-  '染髮': ['單染髮'],
-  '護髮 & 頭皮保養': ['護髮（基礎）', '護髮（標準）', '護髮（深層）', '頭皮精油保養', '頭皮養髮保養'],
+  '染髮': ['單染髮', '染髮（長髮）'],
+  '頭皮保養': ['頭皮精油保養', '頭皮養髮保養'],
 };
 
 const getCategoryForService = (serviceName: string): string => {
@@ -244,6 +243,11 @@ export const SelectServicesScreen: React.FC<Props> = ({ navigation, route }) => 
                         ]}>
                           {service.name}
                         </Text>
+                        {service.description ? (
+                          <Text style={[styles.serviceDescription, { fontSize: r.fs.xs }]}>
+                            {service.description}
+                          </Text>
+                        ) : null}
                         <View style={styles.serviceMeta}>
                           <Ionicons
                             name="time-outline"
@@ -251,7 +255,7 @@ export const SelectServicesScreen: React.FC<Props> = ({ navigation, route }) => 
                             color={colors.mutedForeground}
                           />
                           <Text style={[styles.serviceDuration, { fontSize: r.fs.sm }]}>
-                            {formatDuration(service.duration_minutes)}
+                            {service.duration_minutes > 0 ? formatDuration(service.duration_minutes) : '搭配洗髮'}
                           </Text>
                         </View>
                       </View>
@@ -400,7 +404,7 @@ const styles = StyleSheet.create({
   },
   serviceCardSelected: {
     borderColor: colors.primary,
-    backgroundColor: 'rgba(201, 169, 110, 0.08)',
+    backgroundColor: colors.primarySubtle,
   },
   serviceCardMargin: {
     marginBottom: spacing.sm,
@@ -445,6 +449,12 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.md,
     fontFamily: typography.fontFamily.chineseMedium,
     color: colors.foreground,
+    marginBottom: 4,
+  },
+  serviceDescription: {
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontFamily.chinese,
+    color: colors.primary,
     marginBottom: 4,
   },
   serviceNameSelected: {

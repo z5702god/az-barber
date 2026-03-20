@@ -9,6 +9,7 @@ export type RootStackParamList = {
   BookingFlow: NavigatorScreenParams<BookingStackParamList>;
   BookingDetail: { bookingId: string };
   BarberAddBooking: { barberId: string; preselectedDate?: string };
+  OwnerAnnouncement: undefined;
   Notifications: undefined;
   PrivacyPolicy: undefined;
   Terms: undefined;

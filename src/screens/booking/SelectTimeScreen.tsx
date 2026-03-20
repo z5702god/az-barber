@@ -79,16 +79,12 @@ export const SelectTimeScreen: React.FC<Props> = ({ navigation, route }) => {
         .is('specific_date', null)
         .limit(1);
 
-      // 3. Fetch existing bookings for this date
-      const { data: bookingsData } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('barber_id', barberId)
-        .eq('booking_date', date)
-        .neq('status', 'cancelled');
+      // 3. Fetch booked slots via RPC (bypasses RLS to see ALL bookings, not just own)
+      const { data: bookedSlots } = await supabase
+        .rpc('get_booked_slots', { p_barber_id: barberId, p_date: date });
 
       setAvailability(availData?.[0] || null);
-      setExistingBookings(bookingsData || []);
+      setExistingBookings((bookedSlots || []) as Booking[]);
     } catch (error) {
       if (__DEV__) console.error('Error fetching data:', error);
       setFetchError(true);

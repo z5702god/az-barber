@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { useResponsive } from '../../hooks/useResponsive';
 import { useBarberStats } from '../../hooks/useBarberStats';
+import { BarberSelector, BARBER_ALL } from '../../components/BarberSelector';
 import { BarberTabParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 
@@ -28,8 +29,8 @@ const PERIOD_OPTIONS = [
 export const StatsScreen: React.FC<Props> = () => {
   const { user } = useAuth();
   const r = useResponsive();
-  // 使用 barber_id（barbers 表的 ID），而非 user.id（users 表的 ID）
-  const barberId = user?.barber_id || '';
+  const isOwner = user?.role === 'owner';
+  const [selectedBarberId, setSelectedBarberId] = useState(isOwner ? BARBER_ALL : (user?.barber_id || ''));
   const [period, setPeriod] = useState<Period>('week');
 
   const { startDate, endDate } = useMemo(() => {
@@ -57,11 +58,20 @@ export const StatsScreen: React.FC<Props> = () => {
     };
   }, [period]);
 
-  const { stats, topServices, recentCustomers, loading } = useBarberStats(barberId, startDate, endDate);
+  const { stats, topServices, recentCustomers, loading } = useBarberStats(selectedBarberId, startDate, endDate);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+
+      {/* Owner: Barber Selector */}
+      {isOwner && (
+        <BarberSelector
+          selectedBarberId={selectedBarberId}
+          onSelect={setSelectedBarberId}
+          showAll={true}
+        />
+      )}
 
       {/* Period Selector */}
       <View style={[styles.periodSelector, { padding: r.sp.lg, gap: r.sp.sm }]}>
@@ -191,7 +201,7 @@ const styles = StyleSheet.create({
   },
   periodButtonActive: {
     borderColor: colors.primary,
-    backgroundColor: 'rgba(201, 169, 110, 0.15)',
+    backgroundColor: colors.primaryLight,
   },
   periodText: {
     fontSize: typography.fontSize.sm,

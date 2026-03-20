@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   TextInput,
   StatusBar,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Text, ActivityIndicator, Divider } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -204,13 +206,17 @@ export const ConfirmBookingScreen: React.FC<Props> = ({ navigation, route }) => 
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[styles.scrollContent, { padding: r.sp.md, paddingBottom: r.isTablet ? 140 : 120 }]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Appointment Details Card */}
         <View style={[styles.card, { padding: r.sp.md, marginBottom: r.sp.md }]}>
@@ -315,7 +321,7 @@ export const ConfirmBookingScreen: React.FC<Props> = ({ navigation, route }) => 
           )}
         </PressableButton>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

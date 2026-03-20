@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: 'rgba(255, 92, 51, 0.1)',
+    backgroundColor: colors.destructiveLight,
     borderWidth: 1,
     borderColor: colors.destructive,
     borderRadius: 0,
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   },
   genderOptionSelected: {
     borderColor: colors.primary,
-    backgroundColor: 'rgba(201, 169, 110, 0.15)',
+    backgroundColor: colors.primaryLight,
   },
   genderText: {
     fontSize: typography.fontSize.sm,

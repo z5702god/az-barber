@@ -6,23 +6,23 @@
 export const colors = {
   // 主要顏色
   primary: '#C9A96E',           // 金色強調色 (從設計截圖取得)
-  primaryForeground: '#111111', // 主色上的文字
+  primaryForeground: '#0D181B', // 主色上的文字 (極深藍綠)
 
   // 背景
-  background: '#111111',        // 深色背景
-  card: '#1C1C1C',              // 卡片背景 (統一設計規範)
+  background: '#131F22',        // 深藍綠色背景 (品牌色)
+  card: '#1A2C31',              // 卡片背景 (藍綠色系)
   cardForeground: '#FFFFFF',    // 卡片文字
 
   // 文字
   foreground: '#FFFFFF',        // 主要文字
-  mutedForeground: '#A0A0A0',   // 次要文字 / 灰色文字 (提高對比度)
+  mutedForeground: '#8A9FA5',   // 次要文字 (藍綠色調灰)
 
   // 邊框
-  border: '#2A2A2A',            // 邊框顏色 (統一設計規範)
-  input: '#2A2A2A',             // 輸入框邊框
+  border: '#243A42',            // 邊框顏色 (藍綠色系)
+  input: '#243A42',             // 輸入框邊框
 
   // 次要顏色
-  secondary: '#2A2A2A',         // 次要背景
+  secondary: '#243A42',         // 次要背景
   secondaryForeground: '#FFFFFF',
 
   // 功能色
@@ -37,8 +37,14 @@ export const colors = {
 
   // 其他
   ring: '#C9A96E',              // 使用金色作為 focus ring
-  muted: '#2A2A2A',
+  muted: '#243A42',
   overlay: 'rgba(0, 0, 0, 0.8)',
+
+  // 半透明色值
+  primaryLight: 'rgba(201, 169, 110, 0.15)',    // 金色 15% - 卡片/icon 背景
+  primarySubtle: 'rgba(201, 169, 110, 0.08)',   // 金色 8% - 極淡背景
+  successLight: 'rgba(76, 175, 80, 0.15)',      // 綠色 15% - 成功狀態背景
+  destructiveLight: 'rgba(255, 92, 51, 0.15)',  // 紅色 15% - 危險狀態背景
 
   // 互動狀態
   pressed: 'rgba(201, 169, 110, 0.15)', // 按壓時的金色疊加

@@ -368,7 +368,7 @@ async function getBarberHolidays(supabase: any, barberName: string) {
 async function getServices(supabase: any) {
   const { data, error } = await supabase
     .from('services')
-    .select('id, name, duration_minutes, price')
+    .select('id, name, duration_minutes, price, description, aliases')
     .eq('is_active', true)
     .order('sort_order')
 
@@ -376,8 +376,10 @@ async function getServices(supabase: any) {
   return {
     services: data.map((s: any) => ({
       name: s.name,
-      duration: `${s.duration_minutes} 分鐘`,
+      duration: s.duration_minutes > 0 ? `${s.duration_minutes} 分鐘` : '搭配洗髮',
       price: `$${s.price}`,
+      ...(s.description ? { note: s.description } : {}),
+      ...(s.aliases ? { aliases: s.aliases } : {}),
     })),
   }
 }
@@ -395,14 +397,23 @@ async function createBooking(supabase: any, userId: string, args: any) {
 
   if (!barber) return { error: `找不到理髮師：${barber_name}` }
 
-  // Find services
+  // Find services (include aliases for fuzzy matching)
   const { data: services } = await supabase
     .from('services')
-    .select('id, name, duration_minutes, price')
+    .select('id, name, duration_minutes, price, aliases')
     .eq('is_active', true)
 
   const selectedServices = services.filter((s: any) =>
-    service_names.some((name: string) => s.name.includes(name) || name.includes(s.name))
+    service_names.some((name: string) => {
+      // Match by name
+      if (s.name.includes(name) || name.includes(s.name)) return true
+      // Match by aliases
+      if (s.aliases) {
+        const aliasList = s.aliases.split(',').map((a: string) => a.trim())
+        return aliasList.some((alias: string) => alias.includes(name) || name.includes(alias))
+      }
+      return false
+    })
   )
 
   if (selectedServices.length === 0) {

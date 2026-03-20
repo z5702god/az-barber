@@ -46,6 +46,8 @@ export interface Service {
   sort_order: number;
   is_active: boolean;
   created_at: string;
+  description?: string;
+  aliases?: string;
 }
 
 // Availability slot

@@ -57,12 +57,14 @@ CREATE TRIGGER barbers_updated_at
 CREATE TABLE services (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
-  duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0),
+  duration_minutes INTEGER NOT NULL CHECK (duration_minutes >= 0),
   price INTEGER NOT NULL CHECK (price >= 0),
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  description TEXT,
+  aliases TEXT
 );
 
 CREATE TRIGGER services_updated_at

@@ -22,6 +22,7 @@ interface CustomerHistory {
   lastVisit: string;
 }
 
+// barberId='all' 時取得所有理髮師的統計
 export function useBarberStats(barberId: string, startDate: string, endDate: string) {
   const [stats, setStats] = useState<Stats>({
     totalRevenue: 0,
@@ -37,14 +38,21 @@ export function useBarberStats(barberId: string, startDate: string, endDate: str
     if (!barberId) return;
     setLoading(true);
 
+    const isAll = barberId === 'all';
+
     try {
       // 取得預約統計
-      const { data: bookings } = await supabase
+      let bookingsQuery = supabase
         .from('bookings')
         .select('total_price, status')
-        .eq('barber_id', barberId)
         .gte('booking_date', startDate)
         .lte('booking_date', endDate);
+
+      if (!isAll) {
+        bookingsQuery = bookingsQuery.eq('barber_id', barberId);
+      }
+
+      const { data: bookings } = await bookingsQuery;
 
       if (bookings) {
         const completed = bookings.filter(b => b.status === 'completed');
@@ -60,16 +68,21 @@ export function useBarberStats(barberId: string, startDate: string, endDate: str
       }
 
       // 取得熱門服務（簡化版）
-      const { data: serviceData } = await supabase
+      let serviceQuery = supabase
         .from('booking_services')
         .select(`
           service:services(name, price),
           booking:bookings!inner(barber_id, status, booking_date)
         `)
-        .eq('booking.barber_id', barberId)
         .eq('booking.status', 'completed')
         .gte('booking.booking_date', startDate)
         .lte('booking.booking_date', endDate);
+
+      if (!isAll) {
+        serviceQuery = serviceQuery.eq('booking.barber_id', barberId);
+      }
+
+      const { data: serviceData } = await serviceQuery;
 
       if (serviceData) {
         const serviceMap = new Map<string, { count: number; revenue: number }>();
@@ -92,7 +105,7 @@ export function useBarberStats(barberId: string, startDate: string, endDate: str
       }
 
       // 取得近期顧客
-      const { data: customerData } = await supabase
+      let customerQuery = supabase
         .from('bookings')
         .select(`
           customer_id,
@@ -100,10 +113,15 @@ export function useBarberStats(barberId: string, startDate: string, endDate: str
           booking_date,
           customer:users!bookings_customer_id_fkey(id, name, email)
         `)
-        .eq('barber_id', barberId)
         .eq('status', 'completed')
         .order('booking_date', { ascending: false })
         .limit(50);
+
+      if (!isAll) {
+        customerQuery = customerQuery.eq('barber_id', barberId);
+      }
+
+      const { data: customerData } = await customerQuery;
 
       if (customerData) {
         const customerMap = new Map<string, CustomerHistory>();

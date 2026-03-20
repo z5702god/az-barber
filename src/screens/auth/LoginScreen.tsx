@@ -259,11 +259,11 @@ export const LoginScreen: React.FC = () => {
       {/* Gradient Overlay */}
       <LinearGradient
         colors={[
-          'rgba(17, 17, 17, 0.3)',
-          'rgba(17, 17, 17, 0.5)',
-          'rgba(17, 17, 17, 0.7)',
-          'rgba(17, 17, 17, 0.85)',
-          'rgba(17, 17, 17, 0.95)',
+          'rgba(19, 31, 34, 0.3)',
+          'rgba(19, 31, 34, 0.5)',
+          'rgba(19, 31, 34, 0.7)',
+          'rgba(19, 31, 34, 0.85)',
+          'rgba(19, 31, 34, 0.95)',
         ]}
         locations={[0, 0.2, 0.45, 0.7, 1]}
         style={styles.overlay}

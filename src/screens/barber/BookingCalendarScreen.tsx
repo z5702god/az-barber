@@ -9,6 +9,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Calendar, DateData } from 'react-native-calendars';
@@ -17,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { useResponsive } from '../../hooks/useResponsive';
 import { useBarberBookings, useBarberMonthlyBookingDates, useUpdateBookingStatus } from '../../hooks/useBarberData';
+import { BarberSelector, BARBER_ALL } from '../../components/BarberSelector';
 import { BarberTabParamList, RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 import { Booking } from '../../types';
@@ -27,13 +29,13 @@ export const BookingCalendarScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth();
   const r = useResponsive();
   const rootNavigation = navigation.getParent<NativeStackNavigationProp<RootStackParamList>>();
-  // 使用 barber_id（barbers 表的 ID），而非 user.id（users 表的 ID）
-  const barberId = user?.barber_id || '';
+  const isOwner = user?.role === 'owner';
+  const [selectedBarberId, setSelectedBarberId] = useState(isOwner ? BARBER_ALL : (user?.barber_id || ''));
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7)); // "YYYY-MM"
 
-  const { bookings, loading, refetch } = useBarberBookings(barberId, selectedDate);
-  const { bookedDates, refetch: refetchDates } = useBarberMonthlyBookingDates(barberId, currentMonth);
+  const { bookings, loading, refetch } = useBarberBookings(selectedBarberId, selectedDate);
+  const { bookedDates, refetch: refetchDates } = useBarberMonthlyBookingDates(selectedBarberId, currentMonth);
   const { cancelBooking, updating } = useUpdateBookingStatus();
 
   // 取消預約 Modal 狀態
@@ -99,6 +101,8 @@ export const BookingCalendarScreen: React.FC<Props> = ({ navigation }) => {
       setCancelReason('');
       refetch();
       refetchDates(); // Refresh calendar dots
+    } else {
+      Alert.alert('取消失敗', result.error || '請稍後再試');
     }
   };
 
@@ -151,6 +155,15 @@ export const BookingCalendarScreen: React.FC<Props> = ({ navigation }) => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
+      {/* Owner: Barber Selector */}
+      {isOwner && (
+        <BarberSelector
+          selectedBarberId={selectedBarberId}
+          onSelect={setSelectedBarberId}
+          showAll={true}
+        />
+      )}
+
       <Calendar
         onDayPress={handleDayPress}
         onMonthChange={handleMonthChange}
@@ -161,7 +174,20 @@ export const BookingCalendarScreen: React.FC<Props> = ({ navigation }) => {
 
       <View style={[styles.dateHeader, { padding: r.sp.lg }]}>
         <Text style={[styles.dateTitle, { fontSize: r.fs.md }]}>{formattedDate}</Text>
-        <Text style={[styles.bookingCount, { fontSize: r.fs.sm }]}>{bookings.length} 筆預約</Text>
+        <View style={[styles.dateHeaderRight, { gap: r.sp.md }]}>
+          <Text style={[styles.bookingCount, { fontSize: r.fs.sm }]}>{bookings.length} 筆預約</Text>
+          <TouchableOpacity
+            style={[styles.addButton, { paddingVertical: r.sp.xs, paddingHorizontal: r.sp.md, gap: r.sp.xs }]}
+            onPress={() => rootNavigation?.navigate('BarberAddBooking', {
+              barberId: selectedBarberId === BARBER_ALL ? (user?.barber_id || '') : selectedBarberId,
+              preselectedDate: selectedDate,
+            })}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="add" size={r.isTablet ? 22 : 18} color={colors.primaryForeground} />
+            <Text style={[styles.addButtonText, { fontSize: r.fs.sm }]}>新增</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={[styles.bookingList, { padding: r.sp.lg }]} showsVerticalScrollIndicator={false}>
@@ -207,6 +233,9 @@ export const BookingCalendarScreen: React.FC<Props> = ({ navigation }) => {
               </View>
 
               <Text style={[styles.serviceText, { fontSize: r.fs.sm, marginBottom: r.sp.sm }]}>
+                {selectedBarberId === BARBER_ALL && (booking as any).barber?.display_name
+                  ? `${(booking as any).barber.display_name} · `
+                  : ''}
                 {booking.services?.map((s: any) => s.service?.name).join(' + ')}
               </Text>
 
@@ -251,74 +280,70 @@ export const BookingCalendarScreen: React.FC<Props> = ({ navigation }) => {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={[styles.modalOverlay, { padding: r.sp.lg }]}
+          style={styles.modalKeyboardView}
         >
-          <View style={[styles.modal, { padding: r.sp.lg, ...(r.isTablet && { maxWidth: r.modalMaxWidth, alignSelf: 'center' as const, width: '100%' }) }]}>
-            <Text style={[styles.modalTitle, { fontSize: r.fs.lg, marginBottom: r.sp.md }]}>取消預約</Text>
-            {selectedBooking && (
-              <View style={[styles.modalBookingInfo, { padding: r.sp.md, marginBottom: r.sp.md, gap: r.sp.xs }]}>
-                <Text style={[styles.modalBookingText, { fontSize: r.fs.sm }]}>
-                  顧客：{selectedBooking.customer?.name?.trim()
-                    || selectedBooking.walk_in_name
-                    || selectedBooking.customer?.email?.split('@')[0]
-                    || selectedBooking.customer?.phone
-                    || '顧客'}
-                </Text>
-                <Text style={[styles.modalBookingText, { fontSize: r.fs.sm }]}>
-                  時間：{selectedBooking.start_time?.slice(0, 5) || ''}
-                </Text>
+          <ScrollView
+            contentContainerStyle={[styles.modalScrollContent, { padding: r.sp.lg }]}
+            keyboardShouldPersistTaps="handled"
+            bounces={false}
+          >
+            <View style={[styles.modal, { padding: r.sp.lg, ...(r.isTablet && { maxWidth: r.modalMaxWidth, alignSelf: 'center' as const, width: '100%' }) }]}>
+              <Text style={[styles.modalTitle, { fontSize: r.fs.lg, marginBottom: r.sp.md }]}>取消預約</Text>
+              {selectedBooking && (
+                <View style={[styles.modalBookingInfo, { padding: r.sp.md, marginBottom: r.sp.md, gap: r.sp.xs }]}>
+                  <Text style={[styles.modalBookingText, { fontSize: r.fs.sm }]}>
+                    顧客：{selectedBooking.customer?.name?.trim()
+                      || selectedBooking.walk_in_name
+                      || selectedBooking.customer?.email?.split('@')[0]
+                      || selectedBooking.customer?.phone
+                      || '顧客'}
+                  </Text>
+                  <Text style={[styles.modalBookingText, { fontSize: r.fs.sm }]}>
+                    時間：{selectedBooking.start_time?.slice(0, 5) || ''}
+                  </Text>
+                </View>
+              )}
+
+              <View style={[styles.inputGroup, { marginBottom: r.sp.md }]}>
+                <Text style={[styles.inputLabel, { fontSize: r.fs.sm, marginBottom: r.sp.xs }]}>取消原因（必填）</Text>
+                <TextInput
+                  style={[styles.reasonInput, { padding: r.sp.md, fontSize: r.fs.md }]}
+                  value={cancelReason}
+                  onChangeText={setCancelReason}
+                  placeholder="請輸入取消原因，顧客會收到推播通知"
+                  placeholderTextColor={colors.mutedForeground}
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                />
               </View>
-            )}
 
-            <View style={[styles.inputGroup, { marginBottom: r.sp.md }]}>
-              <Text style={[styles.inputLabel, { fontSize: r.fs.sm, marginBottom: r.sp.xs }]}>取消原因（必填）</Text>
-              <TextInput
-                style={[styles.reasonInput, { padding: r.sp.md, fontSize: r.fs.md }]}
-                value={cancelReason}
-                onChangeText={setCancelReason}
-                placeholder="請輸入取消原因，顧客會收到推播通知"
-                placeholderTextColor={colors.mutedForeground}
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-              />
+              <View style={[styles.modalButtonRow, { gap: r.sp.sm }]}>
+                <TouchableOpacity
+                  style={[styles.modalCancelButton, { paddingVertical: r.sp.sm }]}
+                  onPress={() => setCancelModalVisible(false)}
+                >
+                  <Text style={[styles.modalCancelButtonText, { fontSize: r.fs.sm }]}>返回</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.modalConfirmButton,
+                    { paddingVertical: r.sp.sm },
+                    !cancelReason.trim() && styles.modalConfirmButtonDisabled,
+                  ]}
+                  onPress={handleConfirmCancel}
+                  disabled={!cancelReason.trim() || updating}
+                >
+                  <Text style={[styles.modalConfirmButtonText, { fontSize: r.fs.sm }]}>
+                    {updating ? '處理中...' : '確定取消'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-
-            <View style={[styles.modalButtonRow, { gap: r.sp.sm }]}>
-              <TouchableOpacity
-                style={[styles.modalCancelButton, { paddingVertical: r.sp.sm }]}
-                onPress={() => setCancelModalVisible(false)}
-              >
-                <Text style={[styles.modalCancelButtonText, { fontSize: r.fs.sm }]}>返回</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.modalConfirmButton,
-                  { paddingVertical: r.sp.sm },
-                  !cancelReason.trim() && styles.modalConfirmButtonDisabled,
-                ]}
-                onPress={handleConfirmCancel}
-                disabled={!cancelReason.trim() || updating}
-              >
-                <Text style={[styles.modalConfirmButtonText, { fontSize: r.fs.sm }]}>
-                  {updating ? '處理中...' : '確定取消'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* FAB - 新增預約 */}
-      {barberId ? (
-        <TouchableOpacity
-          style={[styles.fab, { bottom: r.sp.xl, right: r.sp.lg }]}
-          onPress={() => rootNavigation?.navigate('BarberAddBooking', { barberId, preselectedDate: selectedDate })}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="add" size={28} color={colors.primaryForeground} />
-        </TouchableOpacity>
-      ) : null}
     </View>
   );
 };
@@ -467,11 +492,13 @@ const styles = StyleSheet.create({
     color: colors.destructive,
   },
   // Modal styles
-  modalOverlay: {
+  modalKeyboardView: {
     flex: 1,
     backgroundColor: colors.overlay,
+  },
+  modalScrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
-    padding: spacing.lg,
   },
   modal: {
     backgroundColor: colors.card,
@@ -546,7 +573,7 @@ const styles = StyleSheet.create({
     color: colors.primaryForeground,
   },
   walkInBadge: {
-    backgroundColor: 'rgba(201, 169, 110, 0.15)',
+    backgroundColor: colors.primaryLight,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
@@ -555,17 +582,22 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.chineseMedium,
     color: colors.primary,
   },
-  fab: {
-    position: 'absolute',
-    width: 56,
-    height: 56,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
+  dateHeaderRight: {
+    flexDirection: 'row',
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    gap: spacing.md,
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+  },
+  addButtonText: {
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.secondaryMedium,
+    color: colors.primaryForeground,
   },
 });

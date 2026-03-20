@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import { supabase } from '../services/supabase';
 import { Booking } from '../types';
 
-// 取得理髮師特定日期的預約
+// 取得理髮師特定日期的預約（barberId='all' 時取得所有理髮師）
 export function useBarberBookings(barberId: string, date: string) {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -14,19 +14,25 @@ export function useBarberBookings(barberId: string, date: string) {
 
     setLoading(true);
     try {
-      const { data, error: fetchError } = await supabase
+      let query = supabase
         .from('bookings')
         .select(`
           id, customer_id, barber_id, booking_date, start_time, end_time, total_duration, total_price, status, created_at, customer_note, note_updated_at, cancellation_reason, cancelled_by, walk_in_name, walk_in_phone, created_by,
           customer:users!bookings_customer_id_fkey(id, name, email, phone),
+          barber:barbers(id, display_name),
           services:booking_services(service:services(*))
         `)
-        .eq('barber_id', barberId)
         .eq('booking_date', date)
         .order('start_time');
 
+      if (barberId !== 'all') {
+        query = query.eq('barber_id', barberId);
+      }
+
+      const { data, error: fetchError } = await query;
+
       if (fetchError) throw fetchError;
-      setBookings(data || []);
+      setBookings((data as any) || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -41,7 +47,7 @@ export function useBarberBookings(barberId: string, date: string) {
   return { bookings, loading, error, refetch: fetchBookings };
 }
 
-// 取得理髮師今日摘要統計
+// 取得理髮師今日摘要統計（barberId='all' 時取得所有理髮師）
 export function useBarberTodayStats(barberId: string) {
   const [stats, setStats] = useState({
     bookingCount: 0,
@@ -56,12 +62,17 @@ export function useBarberTodayStats(barberId: string) {
       const now = new Date();
       const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('bookings')
         .select('total_price, status')
-        .eq('barber_id', barberId)
         .eq('booking_date', today)
         .in('status', ['confirmed', 'completed']);
+
+      if (barberId !== 'all') {
+        query = query.eq('barber_id', barberId);
+      }
+
+      const { data, error } = await query;
 
       if (!error && data) {
         setStats({
@@ -78,7 +89,7 @@ export function useBarberTodayStats(barberId: string) {
   return { stats, loading };
 }
 
-// 取得理髮師特定月份的預約日期（用於行事曆標記）
+// 取得理髮師特定月份的預約日期（用於行事曆標記，barberId='all' 時取得所有理髮師）
 export function useBarberMonthlyBookingDates(barberId: string, yearMonth: string) {
   const [bookedDates, setBookedDates] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,13 +106,18 @@ export function useBarberMonthlyBookingDates(barberId: string, yearMonth: string
       const lastDay = new Date(year, month, 0).getDate();
       const endDate = `${yearMonth}-${String(lastDay).padStart(2, '0')}`;
 
-      const { data, error: fetchError } = await supabase
+      let query = supabase
         .from('bookings')
         .select('booking_date')
-        .eq('barber_id', barberId)
         .gte('booking_date', startDate)
         .lte('booking_date', endDate)
         .neq('status', 'cancelled');
+
+      if (barberId !== 'all') {
+        query = query.eq('barber_id', barberId);
+      }
+
+      const { data, error: fetchError } = await query;
 
       if (fetchError) throw fetchError;
 
@@ -148,16 +164,20 @@ export function useUpdateBookingStatus() {
     setUpdating(true);
     try {
       // 1. 更新預約狀態和取消原因
-      const { error: updateError } = await supabase
+      const { data: updated, error: updateError } = await supabase
         .from('bookings')
         .update({
           status: 'cancelled',
           cancellation_reason: reason,
           cancelled_by: 'barber',
         })
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .select('id');
 
       if (updateError) throw updateError;
+      if (!updated || updated.length === 0) {
+        throw new Error('無法取消此預約，可能沒有權限');
+      }
 
       // 2. 嘗試發送推播通知（如果 push_token 存在）
       try {

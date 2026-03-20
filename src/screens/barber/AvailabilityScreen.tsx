@@ -9,6 +9,7 @@ import {
   StatusBar,
   Platform,
   TextInput,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Text, Portal } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -18,6 +19,7 @@ import { Calendar, DateData } from 'react-native-calendars';
 import { useAuth } from '../../hooks/useAuth';
 import { useResponsive } from '../../hooks/useResponsive';
 import { useWeeklyAvailability, useExceptionDates } from '../../hooks/useAvailability';
+import { BarberSelector } from '../../components/BarberSelector';
 import { BarberTabParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 
@@ -26,11 +28,11 @@ type Props = NativeStackScreenProps<BarberTabParamList, 'Availability'>;
 export const AvailabilityScreen: React.FC<Props> = () => {
   const { user } = useAuth();
   const r = useResponsive();
-  // 使用 barber_id（barbers 表的 ID），而非 user.id（users 表的 ID）
-  const barberId = user?.barber_id || '';
+  const isOwner = user?.role === 'owner';
+  const [selectedBarberId, setSelectedBarberId] = useState(user?.barber_id || '');
 
-  const { availability, loading: weeklyLoading, updateDayAvailability, DAY_NAMES } = useWeeklyAvailability(barberId);
-  const { exceptions, loading: exceptionsLoading, addException, removeException } = useExceptionDates(barberId);
+  const { availability, loading: weeklyLoading, updateDayAvailability, DAY_NAMES } = useWeeklyAvailability(selectedBarberId);
+  const { exceptions, loading: exceptionsLoading, addException, removeException } = useExceptionDates(selectedBarberId);
 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingDay, setEditingDay] = useState<number | null>(null);
@@ -276,6 +278,15 @@ export const AvailabilityScreen: React.FC<Props> = () => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
+      {/* Owner: Barber Selector (排班不支援「全部」聚合) */}
+      {isOwner && (
+        <BarberSelector
+          selectedBarberId={selectedBarberId}
+          onSelect={setSelectedBarberId}
+          showAll={false}
+        />
+      )}
+
       {/* Weekly Schedule */}
       <Text style={[styles.sectionTitle, { fontSize: r.fs.xs, padding: r.sp.lg, paddingBottom: r.sp.md }]}>每週排班</Text>
       <View style={[styles.card, { marginHorizontal: r.sp.lg, marginBottom: r.sp.md }]}>
@@ -458,75 +469,84 @@ export const AvailabilityScreen: React.FC<Props> = () => {
         animationType="fade"
         onRequestClose={() => setExceptionModalVisible(false)}
       >
-        <View style={[styles.modalOverlay, { padding: r.sp.md }]}>
-          <View style={[styles.modal, { padding: r.sp.lg, ...(r.isTablet && { maxWidth: r.modalMaxWidth, alignSelf: 'center' as const, width: '100%' }) }]}>
-            <Text style={[styles.modalTitle, { fontSize: r.fs.lg, marginBottom: r.sp.sm }]}>
-              {editingGroupIds ? '編輯休假' : '新增休假'}
-            </Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalKeyboardView}
+        >
+          <ScrollView
+            contentContainerStyle={[styles.modalScrollContent, { padding: r.sp.md }]}
+            keyboardShouldPersistTaps="handled"
+            bounces={false}
+          >
+            <View style={[styles.modal, { padding: r.sp.lg, ...(r.isTablet && { maxWidth: r.modalMaxWidth, alignSelf: 'center' as const, width: '100%' }) }]}>
+              <Text style={[styles.modalTitle, { fontSize: r.fs.lg, marginBottom: r.sp.sm }]}>
+                {editingGroupIds ? '編輯休假' : '新增休假'}
+              </Text>
 
-            {/* 選取提示 */}
-            <Text style={[styles.calendarHint, { fontSize: r.fs.sm, marginBottom: r.sp.sm }]}>
-              {!selectedStart
-                ? '點選開始日期'
-                : !selectedEnd
-                  ? `${selectedStart}（點選結束日期，或直接新增單天）`
-                  : `${selectedStart} ~ ${selectedEnd}`}
-            </Text>
+              {/* 選取提示 */}
+              <Text style={[styles.calendarHint, { fontSize: r.fs.sm, marginBottom: r.sp.sm }]}>
+                {!selectedStart
+                  ? '點選開始日期'
+                  : !selectedEnd
+                    ? `${selectedStart}（點選結束日期，或直接新增單天）`
+                    : `${selectedStart} ~ ${selectedEnd}`}
+              </Text>
 
-            {/* 日曆 */}
-            <Calendar
-              markingType="period"
-              markedDates={calendarMarkedDates}
-              onDayPress={handleCalendarDayPress}
-              minDate={todayString}
-              theme={{
-                calendarBackground: colors.background,
-                dayTextColor: colors.foreground,
-                textDisabledColor: '#3A3A3A',
-                monthTextColor: colors.foreground,
-                textMonthFontFamily: typography.fontFamily.displayMedium,
-                textMonthFontSize: r.fs.md,
-                textDayFontFamily: typography.fontFamily.body,
-                textDayFontSize: r.fs.sm,
-                textDayHeaderFontFamily: typography.fontFamily.bodyMedium,
-                textDayHeaderFontSize: r.fs.xs,
-                todayTextColor: colors.primary,
-                arrowColor: colors.primary,
-              }}
-              style={styles.calendar}
-            />
-
-            <View style={[styles.inputGroup, { marginTop: r.sp.md, marginBottom: r.sp.md }]}>
-              <Text style={[styles.inputLabel, { fontSize: r.fs.sm, marginBottom: r.sp.xs }]}>說明（選填）</Text>
-              <TextInput
-                style={[styles.descriptionInput, { fontSize: r.fs.md, padding: r.sp.md }]}
-                value={exceptionDescription}
-                onChangeText={setExceptionDescription}
-                placeholder="例：出國旅遊、進修課程"
-                placeholderTextColor={colors.mutedForeground}
-                multiline
+              {/* 日曆 */}
+              <Calendar
+                markingType="period"
+                markedDates={calendarMarkedDates}
+                onDayPress={handleCalendarDayPress}
+                minDate={todayString}
+                theme={{
+                  calendarBackground: colors.background,
+                  dayTextColor: colors.foreground,
+                  textDisabledColor: colors.muted,
+                  monthTextColor: colors.foreground,
+                  textMonthFontFamily: typography.fontFamily.displayMedium,
+                  textMonthFontSize: r.fs.md,
+                  textDayFontFamily: typography.fontFamily.body,
+                  textDayFontSize: r.fs.sm,
+                  textDayHeaderFontFamily: typography.fontFamily.bodyMedium,
+                  textDayHeaderFontSize: r.fs.xs,
+                  todayTextColor: colors.primary,
+                  arrowColor: colors.primary,
+                }}
+                style={styles.calendar}
               />
-            </View>
 
-            <View style={[styles.modalButtonRow, { gap: r.sp.sm }]}>
-              <TouchableOpacity
-                style={[styles.cancelButton, { paddingVertical: r.sp.sm }]}
-                onPress={() => setExceptionModalVisible(false)}
-              >
-                <Text style={[styles.cancelButtonText, { fontSize: r.fs.sm }]}>取消</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.saveButton, { paddingVertical: r.sp.sm, opacity: selectedStart ? 1 : 0.5 }]}
-                onPress={handleSaveException}
-                disabled={!selectedStart}
-              >
-                <Text style={[styles.saveButtonText, { fontSize: r.fs.sm }]}>
-                  {editingGroupIds ? '儲存' : '新增'}
-                </Text>
-              </TouchableOpacity>
+              <View style={[styles.inputGroup, { marginTop: r.sp.md, marginBottom: r.sp.md }]}>
+                <Text style={[styles.inputLabel, { fontSize: r.fs.sm, marginBottom: r.sp.xs }]}>說明（選填）</Text>
+                <TextInput
+                  style={[styles.descriptionInput, { fontSize: r.fs.md, padding: r.sp.md }]}
+                  value={exceptionDescription}
+                  onChangeText={setExceptionDescription}
+                  placeholder="例：出國旅遊、進修課程"
+                  placeholderTextColor={colors.mutedForeground}
+                  multiline
+                />
+              </View>
+
+              <View style={[styles.modalButtonRow, { gap: r.sp.sm }]}>
+                <TouchableOpacity
+                  style={[styles.cancelButton, { paddingVertical: r.sp.sm }]}
+                  onPress={() => setExceptionModalVisible(false)}
+                >
+                  <Text style={[styles.cancelButtonText, { fontSize: r.fs.sm }]}>取消</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.saveButton, { paddingVertical: r.sp.sm, opacity: selectedStart ? 1 : 0.5 }]}
+                  onPress={handleSaveException}
+                  disabled={!selectedStart}
+                >
+                  <Text style={[styles.saveButtonText, { fontSize: r.fs.sm }]}>
+                    {editingGroupIds ? '儲存' : '新增'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </Modal>
     </ScrollView>
   );
@@ -665,6 +685,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.overlay,
     justifyContent: 'center',
     padding: spacing.lg,
+  },
+  modalKeyboardView: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+  },
+  modalScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   modal: {
     backgroundColor: colors.card,

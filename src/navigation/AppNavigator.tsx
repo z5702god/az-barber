@@ -23,6 +23,7 @@ import { BookingDetailScreen } from '../screens/customer/BookingDetailScreen';
 import { AIChatScreen } from '../screens/customer/AIChatScreen';
 import { NotificationsScreen } from '../screens/customer/NotificationsScreen';
 import { BarberAddBookingScreen } from '../screens/barber/BarberAddBookingScreen';
+import { OwnerAnnouncementScreen } from '../screens/barber/OwnerAnnouncementScreen';
 import { PrivacyPolicyScreen } from '../screens/shared/PrivacyPolicyScreen';
 import { TermsScreen } from '../screens/shared/TermsScreen';
 
@@ -118,7 +119,8 @@ export const AppNavigator: React.FC = () => {
   }, []);
 
   // Return null while loading — native splash screen stays visible
-  if (loading) {
+  // Also wait if session exists but user profile hasn't loaded yet (prevents customer screen flash for barbers)
+  if (loading || (session && !user)) {
     return null;
   }
 
@@ -173,6 +175,11 @@ export const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="BarberAddBooking"
               component={BarberAddBookingScreen}
+              options={{ headerShown: false, presentation: 'modal' }}
+            />
+            <Stack.Screen
+              name="OwnerAnnouncement"
+              component={OwnerAnnouncementScreen}
               options={{ headerShown: false, presentation: 'modal' }}
             />
           </>

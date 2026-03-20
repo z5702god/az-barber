@@ -829,7 +829,7 @@ const styles = StyleSheet.create({
   },
   serviceCardSelected: {
     borderColor: colors.primary,
-    backgroundColor: 'rgba(201, 169, 110, 0.08)',
+    backgroundColor: colors.primarySubtle,
   },
   selectedIndicator: {
     position: 'absolute',
